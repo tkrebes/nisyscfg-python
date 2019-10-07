@@ -3,8 +3,10 @@ import nisyscfg
 import nisyscfg.enums
 import nisyscfg.errors
 import pytest
-from unittest import mock
-
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 def test_import():
     nisyscfg.Session
