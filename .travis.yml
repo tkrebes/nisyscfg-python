@@ -13,5 +13,4 @@ install:
   - travis_retry pip install --upgrade tox tox-travis
 
 script:
-  - tox -e test
   - tox
