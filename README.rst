@@ -3,6 +3,11 @@ Info         Python bindings for NI System Configuration. See `GitHub <https://g
 Author       National Instruments
 ===========  ===============================================================================================================================
 
+Status
+======
+.. image:: https://travis-ci.org/tkrebes/nisyscfg-python.svg?branch=master
+    :target: https://travis-ci.org/tkrebes/nisyscfg-python
+
 About
 =====
 
