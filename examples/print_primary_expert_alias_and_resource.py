@@ -10,3 +10,7 @@ def print_primary_expert_alias_and_resource():
             print(format_string.format(resource.ExpertName[0],
                                        resource.ExpertUserAlias[0],
                                        resource.ExpertResourceName[0]))
+
+
+if __name__ == '__main__':
+    print_primary_expert_alias_and_resource()
