@@ -342,7 +342,7 @@ class Filter(object):
     def _set_property(self, id, value, c_type, nisyscfg_type):
         if c_type == ctypes.c_char_p:
             value = c_string_encode(value)
-        elif issubclass(c_type, nisyscfg.enums.CtypesEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
             value = ctypes.c_int(value)
         else:
             value = c_type(value)
@@ -354,19 +354,19 @@ class Filter(object):
         tag.set(self, value)
 
     def set_bool_property(self, id, value):
-        self._set_property(id, value, nisyscfg.enums.Bool, nisyscfg.enums.PropertyType.Bool)
+        self._set_property(id, value, nisyscfg.enums.Bool, nisyscfg.enums.PropertyType.BOOL)
 
     def set_int_property(self, id, value):
-        self._set_property(id, value, ctypes.c_int, nisyscfg.enums.PropertyType.Int)
+        self._set_property(id, value, ctypes.c_int, nisyscfg.enums.PropertyType.INT)
 
     def set_unsigned_int_property(self, id, value):
-        self._set_property(id, value, ctypes.c_uint, nisyscfg.enums.PropertyType.UnsignedInt)
+        self._set_property(id, value, ctypes.c_uint, nisyscfg.enums.PropertyType.UNSIGNED_INT)
 
     def set_double_property(self, id, value):
-        self._set_property(id, value, ctypes.c_double, nisyscfg.enums.PropertyType.Double)
+        self._set_property(id, value, ctypes.c_double, nisyscfg.enums.PropertyType.DOUBLE)
 
     def set_string_property(self, id, value):
-        self._set_property(id, value, ctypes.c_char_p, nisyscfg.enums.PropertyType.String)
+        self._set_property(id, value, ctypes.c_char_p, nisyscfg.enums.PropertyType.STRING)
 
     def set_timestamp_property(self, id, value):
         raise NotImplementedError
@@ -433,7 +433,7 @@ class HardwareResource(object):
         if c_type == ctypes.c_char_p:
             value = nisyscfg.types.simple_string()
             value_arg = value
-        elif issubclass(c_type, nisyscfg.enums.CtypesEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
             value = ctypes.c_int()
             value_arg = ctypes.pointer(value)
         else:
@@ -443,7 +443,7 @@ class HardwareResource(object):
         error_code = self._library.GetResourceProperty(self._handle, id, value_arg)
         nisyscfg.errors.handle_error(self, error_code)
 
-        if issubclass(c_type, nisyscfg.enums.CtypesEnum):
+        if issubclass(c_type, nisyscfg.enums.BaseEnum):
             return c_type(value.value)
 
         return c_string_decode(value.value)
@@ -452,7 +452,7 @@ class HardwareResource(object):
         if c_type == ctypes.c_char_p:
             value = nisyscfg.types.simple_string()
             value_arg = value
-        elif issubclass(c_type, nisyscfg.enums.CtypesEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
             value = ctypes.c_int()
             value_arg = ctypes.pointer(value)
         else:
@@ -462,7 +462,7 @@ class HardwareResource(object):
         error_code = self._library.GetResourceIndexedProperty(self._handle, id, index, value_arg)
         nisyscfg.errors.handle_error(self, error_code)
 
-        if issubclass(c_type, nisyscfg.enums.CtypesEnum):
+        if issubclass(c_type, nisyscfg.enums.BaseEnum):
             return c_type(value.value)
 
         return c_string_decode(value.value)
@@ -474,7 +474,7 @@ class HardwareResource(object):
         try:
             return self[tag]
         except nisyscfg.errors.LibraryError as err:
-            if err.code != nisyscfg.errors.Status.PropDoesNotExist or isinstance(default, _NoDefault):
+            if err.code != nisyscfg.errors.Status.PROP_DOES_NOT_EXIST or isinstance(default, _NoDefault):
                 raise
             return default
 
@@ -517,7 +517,7 @@ class HardwareResource(object):
     def _set_property(self, id, value, c_type):
         if c_type == ctypes.c_char_p:
             value = c_string_encode(value)
-        elif issubclass(c_type, nisyscfg.enums.CtypesEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
             value = ctypes.c_int(value)
         else:
             value = c_type(value)
