@@ -1,6 +1,5 @@
 import ctypes
 import nisyscfg as nisyscfg
-import nisyscfg.addons
 import nisyscfg.enums
 import nisyscfg.errors
 import nisyscfg.properties
@@ -147,47 +146,6 @@ def lib_mock():
                 lib.NISysCfgNextComponentInfo.return_value = nisyscfg.errors.Status.EndOfEnum
                 yield ctypes_mock
     nisyscfg._library_singleton._instance = None
-
-
-class AddonMockIds(object):
-    BOOL_ID = 69
-    INT_ID = 74
-    UINT_ID = 79
-    DOUBLE_ID = 84
-    STRING_ID = 89
-
-
-class AddonMock(object):
-
-    class HardwareFilter(nisyscfg.properties.HardwareFilterAddon):
-        bool_mock = nisyscfg.properties.PropertyBool(id=AddonMockIds.BOOL_ID)
-        int_mock = nisyscfg.properties.PropertyInt(id=AddonMockIds.INT_ID)
-        uint_mock = nisyscfg.properties.PropertyUnsignedInt(id=AddonMockIds.UINT_ID)
-        double_mock = nisyscfg.properties.PropertyDouble(id=AddonMockIds.DOUBLE_ID)
-        string_mock = nisyscfg.properties.PropertyString(id=AddonMockIds.STRING_ID)
-
-    class HardwareResource(nisyscfg.properties.HardwareResourceAddon):
-        bool_mock = nisyscfg.properties.PropertyBool(id=AddonMockIds.BOOL_ID)
-        int_mock = nisyscfg.properties.PropertyInt(id=AddonMockIds.INT_ID)
-        uint_mock = nisyscfg.properties.PropertyUnsignedInt(id=AddonMockIds.UINT_ID)
-        double_mock = nisyscfg.properties.PropertyDouble(id=AddonMockIds.DOUBLE_ID)
-        string_mock = nisyscfg.properties.PropertyString(id=AddonMockIds.STRING_ID)
-
-
-@pytest.fixture(scope='function')
-def entry_points_mock():
-    # Clear the addons cache so that pkg_resources.iter_entry_points will be reevaluated
-    nisyscfg.addons._addons = None
-
-    with mock.patch('pkg_resources.iter_entry_points') as iter_entry_points_mock:
-        entry_point_1 = mock.Mock()
-        entry_point_1.name = 'addon_mock'
-        entry_point_1.load.return_value = AddonMock()
-        iter_entry_points_mock.return_value = [entry_point_1]
-        yield entry_point_1
-
-    # Clear the addons cache to prevent this fixture from affecting other tests
-    nisyscfg.addons._addons = None
 
 
 @pytest.fixture(scope='function')
@@ -362,12 +320,14 @@ def test_find_hardware_with_default_arguments(lib_mock):
 
 def test_find_hardware_with_filter_properties_specified(lib_mock):
     with nisyscfg.Session() as session:
-        session.find_hardware(ExpertName='my_expert')
+        filter = session.create_filter()
+        filter[nisyscfg.FilterProperties.EXPERT_NAME] = 'my_expert'
+        session.find_hardware(filter)
     expected_calls = [
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
-        mock.call().NISysCfgSetFilterProperty(CVoidPMatcher(FILTER_HANDLE), nisyscfg.enums.FilterProperty.ExpertName, b'my_expert'),
+        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), nisyscfg.FilterProperties.EXPERT_NAME._id, nisyscfg.enums.PropertyType.String, b'my_expert'),
         mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MatchValuesAll, mock.ANY, b'', mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
@@ -395,25 +355,25 @@ def test_find_hardware_with_list_of_expert_names(lib_mock):
 
 
 @pytest.mark.parametrize(
-    "property_name, assigned_value, expected_value",
+    "property_name, property_type, assigned_value, expected_value",
     [
-        ('IsDevice', True, CIntPMatcher(1)),
-        ('IsChassis', False, CIntPMatcher(0)),
-        ('ExpertName', 'my_expert', b'my_expert'),
-        ('UserAlias', 'my_alias', b'my_alias'),
-        ('VendorId', 1337, CUIntPMatcher(1337))
+        ('IS_DEVICE', nisyscfg.enums.PropertyType.Bool, True, CIntPMatcher(1)),
+        ('IS_CHASSIS', nisyscfg.enums.PropertyType.Bool, False, CIntPMatcher(0)),
+        ('EXPERT_NAME', nisyscfg.enums.PropertyType.String, 'my_expert', b'my_expert'),
+        ('USER_ALIAS', nisyscfg.enums.PropertyType.String, 'my_alias', b'my_alias'),
+        ('VENDOR_ID', nisyscfg.enums.PropertyType.UnsignedInt, 1337, CUIntPMatcher(1337))
     ])
-def test_find_hardware_with_passed_filter_properties_specified(lib_mock, property_name, assigned_value, expected_value):
+def test_find_hardware_with_passed_filter_properties_specified(lib_mock, property_name, property_type, assigned_value, expected_value):
     with nisyscfg.Session() as session:
         filter = session.create_filter()
-        setattr(filter, property_name, assigned_value)
+        filter[getattr(nisyscfg.FilterProperties, property_name)] = assigned_value
         session.find_hardware(filter)
-        property_id = getattr(nisyscfg.enums.FilterProperty, property_name)
+        property_id = getattr(nisyscfg.FilterProperties, property_name)._id
     expected_calls = [
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
-        mock.call().NISysCfgSetFilterProperty(CVoidPMatcher(FILTER_HANDLE), property_id, expected_value),
+        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), property_id, property_type, expected_value),
         mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MatchValuesAll, mock.ANY, b'', mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
@@ -435,45 +395,15 @@ def test_create_filter(lib_mock):
     assert lib_mock.mock_calls == expected_calls
 
 
-@pytest.mark.parametrize(
-    "property_name, property_type, assigned_value, mock_id",
-    [
-        ('bool_mock', 'Bool', True, AddonMockIds.BOOL_ID),
-        ('int_mock', 'Int', 1002, AddonMockIds.INT_ID),
-        ('uint_mock', 'UnsignedInt', 2048, AddonMockIds.UINT_ID),
-        ('double_mock', 'Double', 1000000, AddonMockIds.DOUBLE_ID),
-        ('string_mock', 'String', 'my_string', AddonMockIds.STRING_ID),
-    ])
-def test_create_filter_and_set_filter_addon_properties(lib_mock, entry_points_mock, property_name, property_type, assigned_value, mock_id):
-    with nisyscfg.Session() as session:
-        filter = session.create_filter()
-        setattr(filter.addon_mock, property_name, assigned_value)
-    expected_calls = [
-        mock.call(mock.ANY),
-        mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
-        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), mock_id, getattr(nisyscfg.enums.PropertyType, property_type), mock.ANY),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
-    ]
-    assert lib_mock.mock_calls == expected_calls
-
-
-def test_filter_getattr_raises_error_when_invalid_addon_specified(lib_mock):
-    with nisyscfg.Session() as session:
-        filter = session.create_filter()
-        assert not hasattr(filter, 'invalid_addon')
-
-
 def test_create_filter_and_set_syscfg_filter_property(lib_mock):
     with nisyscfg.Session() as session:
         filter = session.create_filter()
-        filter.ExpertName = 'my_expert'
+        filter[nisyscfg.FilterProperties.EXPERT_NAME] = 'my_expert'
     expected_calls = [
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
-        mock.call().NISysCfgSetFilterProperty(CVoidPMatcher(FILTER_HANDLE), nisyscfg.enums.FilterProperty.ExpertName, b'my_expert'),
+        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), nisyscfg.FilterProperties.EXPERT_NAME._id, nisyscfg.enums.PropertyType.String, b'my_expert'),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
     ]
@@ -564,72 +494,20 @@ def test_hardware_resource_raises_error_after_close(lib_mock):
 
 
 @pytest.mark.parametrize(
-    "property_name, property_type, assigned_value, mock_id",
-    [
-        ('bool_mock', 'Bool', True, AddonMockIds.BOOL_ID),
-        ('int_mock', 'Int', 1002, AddonMockIds.INT_ID),
-        ('uint_mock', 'UnsignedInt', 2048, AddonMockIds.UINT_ID),
-        ('double_mock', 'Double', 1000000, AddonMockIds.DOUBLE_ID),
-        ('string_mock', 'String', 'my_string', AddonMockIds.STRING_ID),
-    ])
-def test_create_hardware_resource_and_set_hardware_resource_addon_properties(lib_mock, entry_points_mock, config_next_resource_side_effect_mock, property_name, property_type, assigned_value, mock_id):
-    with nisyscfg.Session() as session:
-        resource = next(session.find_hardware())
-        setattr(resource.addon_mock, property_name, assigned_value)
-    expected_calls = [
-        mock.call(mock.ANY),
-        mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgSetResourceProperty(CVoidPMatcher(10), mock_id, mock.ANY),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
-    ]
-    assert lib_mock.mock_calls == expected_calls
-
-
-@pytest.mark.parametrize(
-    "property_name, property_type, expected_value, mock_id",
-    [
-        ('bool_mock', 'Bool', True, AddonMockIds.BOOL_ID),
-        ('int_mock', 'Int', 1002, AddonMockIds.INT_ID),
-        ('uint_mock', 'UnsignedInt', 2048, AddonMockIds.UINT_ID),
-        ('double_mock', 'Double', 1000000, AddonMockIds.DOUBLE_ID),
-        ('string_mock', 'String', 'my_string', AddonMockIds.STRING_ID),
-    ])
-def test_create_hardware_resource_and_get_hardware_resource_addon_properties(lib_mock, entry_points_mock, config_next_resource_side_effect_mock, config_get_resource_property_mock, property_name, property_type, expected_value, mock_id):
-    with nisyscfg.Session() as session:
-        resource = next(session.find_hardware())
-        assert expected_value == getattr(resource.addon_mock, property_name)
-    expected_calls = [
-        mock.call(mock.ANY),
-        mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgGetResourceProperty(CVoidPMatcher(10), mock_id, mock.ANY),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
-        mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
-    ]
-    assert lib_mock.mock_calls == expected_calls
-
-
-@pytest.mark.parametrize(
     "property_name, expected_value",
     [
-        ('IsDevice', True),
-        ('IsChassis', False),
-        ('VendorId', 0x1093),
-        ('VendorName', 'National Instruments'),
-        ('ProductId', 0xABC),
-        ('ProductName', 'NI-BubbleGum'),
+        ('IS_DEVICE', True),
+        ('IS_CHASSIS', False),
+        ('VENDOR_ID', 0x1093),
+        ('VENDOR_NAME', 'National Instruments'),
+        ('PRODUCT_ID', 0xABC),
+        ('PRODUCT_NAME', 'NI-BubbleGum'),
     ])
 def test_get_hardware_resource_property(lib_mock, config_next_resource_side_effect_mock, config_get_resource_property_mock, property_name, expected_value):
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
-        assert expected_value == getattr(resource, property_name)
-        property_id = getattr(nisyscfg.enums.ResourceProperty, property_name)
+        assert expected_value == resource[getattr(nisyscfg.ResourceProperties, property_name)]
+        property_id = getattr(nisyscfg.ResourceProperties, property_name)._id
 
     expected_calls = [
         mock.call(mock.ANY),
@@ -659,17 +537,17 @@ def test_get_hardware_resource_property_raises_library_error_when_error_code_is_
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
         with pytest.raises(nisyscfg.errors.LibraryError):
-            getattr(resource, 'IsDevice')
+            resource[nisyscfg.ResourceProperties.IS_DEVICE]
 
 
 @pytest.mark.parametrize(
     "property_name, count_property, expected_values",
     [
-        ('ExpertName', 'NumberOfExperts', ['xnet', 'sync']),
-        ('ExpertUserAlias', 'NumberOfExperts', ['myDevice']),
-        ('AvailableFirmwareVersion', 'NumberOfAvailableFirmwareVersions', ['1.0', '2.1', '3.3.3']),
-        ('WlanAvailableChannelNumber', 'NumberOfDiscoveredAccessPoints', [3, 1, 2]),
-        ('WlanAvailableLinkSpeed', 'NumberOfDiscoveredAccessPoints', [nisyscfg.enums.LinkSpeed.Auto]),
+        ('EXPERT_NAME', 'NUMBER_OF_EXPERTS', ['xnet', 'sync']),
+        ('EXPERT_USER_ALIAS', 'NUMBER_OF_EXPERTS', ['myDevice']),
+        ('AVAILABLE_FIRMWARE_VERSION', 'NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS', ['1.0', '2.1', '3.3.3']),
+        ('WLAN_AVAILABLE_CHANNEL_NUMBER', 'NUMBER_OF_DISCOVERED_ACCESS_POINTS', [3, 1, 2]),
+        ('WLAN_AVAILABLE_LINK_SPEED', 'NUMBER_OF_DISCOVERED_ACCESS_POINTS', [nisyscfg.enums.LinkSpeed.Auto]),
     ])
 def test_get_hardware_index_property(lib_mock, property_name, count_property, expected_values):
     side_effect_functions = (
@@ -700,10 +578,10 @@ def test_get_hardware_index_property(lib_mock, property_name, count_property, ex
 
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
-        property = getattr(resource, property_name)
+        property = resource[getattr(nisyscfg.IndexedResourceProperties, property_name)]
         assert expected_values == list(property)
-        count_property_id = getattr(nisyscfg.enums.ResourceProperty, count_property)
-        property_id = getattr(nisyscfg.enums.IndexedProperty, property_name)
+        count_property_id = getattr(nisyscfg.ResourceProperties, count_property)._id
+        property_id = getattr(nisyscfg.IndexedResourceProperties, property_name)._id
 
     expected_calls = [
         mock.call(mock.ANY),
