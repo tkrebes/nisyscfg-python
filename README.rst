@@ -41,6 +41,10 @@ The following is a basic example of using an **nisyscfg.Session** object.
 
   >>> import nisyscfg
   >>> with nisyscfg.Session() as session:
-  >>>     # Print user aliases for all NI devices in the local system
-  >>>     for resource in session.find_hardware(IsPresent=True, IsNIProduct=True, IsDevice=True):
-  >>>         print(resource.ExpertUserAlias[0])
+  >>>     # Print user aliases for all National Instruments devices in the local system
+  >>>     filter = session.create_filter()
+  >>>     filter[nisyscfg.FilterProperties.IS_PRESENT] = True
+  >>>     filter[nisyscfg.FilterProperties.IS_NI_PRODUCT] = True
+  >>>     filter[nisyscfg.FilterProperties.IS_DEVICE] = True
+  >>>     for resource in session.find_hardware(filter):
+  >>>         print(resource[nisyscfg.IndexedResourceProperties.EXPERT_USER_ALIAS][0])

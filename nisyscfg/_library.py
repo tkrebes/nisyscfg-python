@@ -175,7 +175,7 @@ class Library(object):
         with self._func_lock:
             if self._GetResourceProperty_cfunc is None:
                 self._GetResourceProperty_cfunc = self._library.windll.NISysCfgGetResourceProperty
-                self._GetResourceProperty_cfunc.argtypes = [ResourceHandle, ResourceProperty, ctypes.c_void_p]  # noqa: F405
+                self._GetResourceProperty_cfunc.argtypes = [ResourceHandle, ctypes.c_uint, ctypes.c_void_p]  # noqa: F405
                 self._GetResourceProperty_cfunc.restype = Status  # noqa: F405
         return self._GetResourceProperty_cfunc(resourceHandle, propertyID, value)
 
@@ -211,7 +211,7 @@ class Library(object):
         with self._func_lock:
             if self._GetResourceIndexedProperty_cfunc is None:
                 self._GetResourceIndexedProperty_cfunc = self._library.windll.NISysCfgGetResourceIndexedProperty
-                self._GetResourceIndexedProperty_cfunc.argtypes = [ResourceHandle, IndexedProperty, ctypes.c_uint, ctypes.c_void_p]  # noqa: F405
+                self._GetResourceIndexedProperty_cfunc.argtypes = [ResourceHandle, ctypes.c_uint, ctypes.c_uint, ctypes.c_void_p]  # noqa: F405
                 self._GetResourceIndexedProperty_cfunc.restype = Status  # noqa: F405
         return self._GetResourceIndexedProperty_cfunc(resourceHandle, propertyID, index, value)
 
@@ -227,7 +227,7 @@ class Library(object):
         with self._func_lock:
             if self._GetSystemProperty_cfunc is None:
                 self._GetSystemProperty_cfunc = self._library.windll.NISysCfgGetSystemProperty
-                self._GetSystemProperty_cfunc.argtypes = [SessionHandle, SystemProperty, ctypes.c_void_p]  # noqa: F405
+                self._GetSystemProperty_cfunc.argtypes = [SessionHandle, ctypes.c_uint, ctypes.c_void_p]  # noqa: F405
                 self._GetSystemProperty_cfunc.restype = Status  # noqa: F405
         return self._GetSystemProperty_cfunc(sessionHandle, propertyID, value)
 
