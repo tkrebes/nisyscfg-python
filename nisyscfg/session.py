@@ -61,7 +61,7 @@ class Session(object):
             expert_names = ','.join(expert_names)
         error_code = self._library.GetSystemExperts(self._session, c_string_encode(expert_names), ctypes.pointer(expert_handle))
         errors.handle_error(self, error_code)
-        iter = ExpertInfoInterator(expert_handle, self._library)
+        iter = ExpertInfoIterator(expert_handle, self._library)
         self._children.append(iter)
         return iter
 
@@ -80,7 +80,7 @@ class Session(object):
             expert_names = ','.join(expert_names)
         error_code = self._library.FindHardware(self._session, mode, filter._handle, c_string_encode(expert_names), ctypes.pointer(resource_handle))
         errors.handle_error(self, error_code)
-        iter = HardwareResourceInterator(self._session, resource_handle, self._library)
+        iter = HardwareResourceIterator(self._session, resource_handle, self._library)
         self._children.append(iter)
         return iter
 
@@ -89,16 +89,18 @@ class Session(object):
         self._children.append(filter)
         return filter
 
-    def restart(self, sync_call=True, install_mode=False, flush_dns=False, timeout=90000, new_ip_address=''):
-        error_code = self._library.Restart(self._session, sync_call, install_mode, flush_dns, timeout, c_string_encode(new_ip_address))
+    def restart(self, sync_call=True, install_mode=False, flush_dns=False, timeout=90000):
+        new_ip_address = simple_string()  # noqa: F405
+        error_code = self._library.Restart(self._session, sync_call, install_mode, flush_dns, timeout, new_ip_address)
         errors.handle_error(self, error_code)
+        return c_string_decode(new_ip_address.value)
 
     def get_available_software_components(self, item_types=IncludeComponentTypes.AllVisible):  # noqa: F405
         software_component_handle = EnumSoftwareComponentHandle()  # noqa: F405
         error_code = self._library.GetAvailableSoftwareComponents(self._session, item_types, ctypes.pointer(software_component_handle))
         errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoInterator(software_component_handle, self._library)
+            iter = ComponentInfoIterator(software_component_handle, self._library)
             self._children.append(iter)
             return iter
 
@@ -107,12 +109,12 @@ class Session(object):
         error_code = self._library.GetInstalledSoftwareComponents(self._session, item_types, cached, ctypes.pointer(software_component_handle))
         errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoInterator(software_component_handle, self._library)
+            iter = ComponentInfoIterator(software_component_handle, self._library)
             self._children.append(iter)
             return iter
 
 
-class ExpertInfoInterator(object):
+class ExpertInfoIterator(object):
     def __init__(self, handle, library):
         self._handle = handle
         self._library = library
@@ -125,6 +127,7 @@ class ExpertInfoInterator(object):
 
     def __next__(self):
         if not self._handle:
+            # TODO(tkrebes): raise RuntimeError
             raise StopIteration()
         expert_name = simple_string()  # noqa: F405
         display_name = simple_string()  # noqa: F405
@@ -173,10 +176,8 @@ def get_filter_property(name):
 
 class Filter(object):
     def __init__(self, session, library):
-        self.__dict__['_handle'] = None
-        self.__dict__['_library'] = None
-        self._handle = FilterHandle()  # noqa: F405
-        self._library = library
+        self.__dict__['_handle'] = FilterHandle()  # noqa: F405
+        self.__dict__['_library'] = library
         error_code = self._library.CreateFilter(session, ctypes.pointer(self._handle))
         errors.handle_error(self, error_code)
 
@@ -218,7 +219,7 @@ class Filter(object):
                 self._set_property(property, value)
 
 
-class HardwareResourceInterator(object):
+class HardwareResourceIterator(object):
     def __init__(self, session, handle, library):
         self._children = []
         self._session = session
@@ -233,6 +234,7 @@ class HardwareResourceInterator(object):
 
     def __next__(self):
         if not self._handle:
+            # TODO(tkrebes): raise RuntimeError
             raise StopIteration()
         resource_handle = ResourceHandle()  # noqa: F405
         error_code = self._library.NextResource(self._session, self._handle, ctypes.pointer(resource_handle))
@@ -358,10 +360,15 @@ class HardwareResource(object):
         return c_string_decode(value.value)
 
     def _get_property(self, property):
-        if property.indexed:
-            return IndexProperties(self, property)
-        else:
-            return self._get_resource_property(property)
+        try:
+            if property.indexed:
+                return IndexProperties(self, property)
+            else:
+                return self._get_resource_property(property)
+        except errors.LibraryError as err:
+            if err.code == errors.Status.PropDoesNotExist:
+                raise AttributeError(property.name)
+            raise
 
     def __getattr__(self, name):
         property = get_hardware_property(name)
@@ -486,7 +493,7 @@ class IndexProperties(object):
         return IndexPropertiesIter(self)
 
 
-class ComponentInfoInterator(object):
+class ComponentInfoIterator(object):
     def __init__(self, handle, library):
         self._handle = handle
         self._library = library
