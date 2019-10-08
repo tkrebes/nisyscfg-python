@@ -8,7 +8,56 @@ from nisyscfg._lib import c_string_encode
 
 
 class Session(object):
-    def __init__(self, target=None, username=None, password=None, language=nisyscfg.enums.Locale.Default, force_property_refresh=True, timeout=60000):
+    def __init__(self, target=None, username=None, password=None, language=nisyscfg.enums.Locale.DEFAULT, force_property_refresh=True, timeout=60000):
+        """
+        Initializes a system configuration session with a specific system.
+
+        This function communicates to the device at the specified address. If
+        the device is no longer online, but it has previously been discovered in
+        Measurement & Automation Explorer (MAX), this function succeeds,
+        allowing you to retrieve cached information about the device.
+
+        target - Specifies the IP address (ex. "224.102.13.24" ), MAC address
+        (ex. "00:80:12:34:56:AB" ), or DNS name (ex. "myhost" ) of the target on
+        a local or Real-Time system. The target defaults to the local system.
+        Values such as a None, an empty string, and the strings localhost or
+        127.0.0.1 also mean the local system.
+
+        username - Specifies the username for the system you are initializing.
+        Leave this parameter None if your target is running LabWindows/CVI 2009
+        Real-Time Module or earlier or if you are connecting to the local
+        system.
+
+        password - Specifies the password for the system you are initializing.
+        Leave this parameter None if no password has been set or if you are
+        connecting to the local system.
+
+        language - Specifies the language.
+        ================== =====================================================
+        Language           Description
+        ------------------ -----------------------------------------------------
+        DEFAULT            Automatically chooses the language based on local
+                           Windows settings.
+        ENGLISH            English
+        FRENCH             French
+        GERMAN             German
+        JAPANESE           Japanese
+        KOREAN             Korean
+        CHINESE_SIMPLIFIED Simplified Chinese
+        ================== =====================================================
+
+        force_property_refresh - Forces properties to be refreshed every time
+        they are read by default. If FALSE, properties are queried once and
+        cached in memory, which can optimize performance.
+
+        timeout - Specifies the time, in milliseconds, that the function waits
+        before the operation times out. When the operation succeeds, the session
+        handle that is returned is set to the default, which is defined as
+        300000 (5 minutes).
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         self._children = []
         self._session = nisyscfg.types.SessionHandle()
         self._library = nisyscfg._library_singleton.get()
@@ -43,6 +92,13 @@ class Session(object):
         return detailed_description
 
     def close(self):
+        """
+        Closes references to previously allocated session, filters, resources,
+        and enumerators.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         self._children.reverse()
         for child in self._children:
             child.close()
@@ -52,6 +108,16 @@ class Session(object):
             self._session = None
 
     def get_system_experts(self, expert_names=''):
+        """
+        Returns the experts available on the system.
+
+        expert_names - This is a case-insensitive comma-separated string
+        specifying which experts to query. If None or empty string, all
+        supported experts are queried.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         expert_handle = nisyscfg.types.EnumExpertHandle()
         if isinstance(expert_names, list):
             expert_names = ','.join(expert_names)
@@ -61,7 +127,35 @@ class Session(object):
         self._children.append(iter)
         return iter
 
-    def find_hardware(self, filter=None, mode=nisyscfg.enums.FilterMode.MatchValuesAll, expert_names=''):
+    def find_hardware(self, filter=None, mode=nisyscfg.enums.FilterMode.MATCH_VALUES_ALL, expert_names=''):
+        """
+        Returns an iterator of hardware in a specified system.
+
+        filter - Specifies a filter you can use to limit the results to hardware
+        matching specific properties. The default is no filter.
+
+        mode - The enumerated list of filter modes.
+        ==================== ===================================================
+        Mode                 Description
+        -------------------- ---------------------------------------------------
+        MATCH_VALUES_ALL     (default) includes all of the properties specified
+                             in the input filter.
+        MATCH_VALUES_ANY     includes any of the properties specified in the
+                             input filter.
+        MATCH_VALUES_NONE    includes none of the properties specified in the
+                             input filter.
+        ALL_PROPERTIES_EXIST includes all of the properties specified in the
+                             input filter, regardless of the value of each
+                             property.
+        ==================== ===================================================
+
+        expert_names - This is a case-insensitive comma-separated string
+        specifying which experts to query. If None or empty-string, all
+        supported experts are queried.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         if filter is None:
             class DummyFilter(object):
                 _handle = None
@@ -76,17 +170,76 @@ class Session(object):
         return iter
 
     def create_filter(self):
+        """
+        Creates a hardware filter object that is used to query for specific
+        resources in a system. After creating a filter, set one or more
+        properties to limit the set of  detected resources.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         filter = Filter(self._session, self._library)
         self._children.append(filter)
         return filter
 
     def restart(self, sync_call=True, install_mode=False, flush_dns=False, timeout=90000):
+        """
+        Reboots a system or network device.
+
+        sync_call - Waits until the reboot has finished before the function
+        operation is completed, by default. Select FALSE to not wait until the
+        reboot is finished before the function completes its operation.
+
+        install_mode - Does not reboot the system into install mode by default.
+        To reboot into install mode, select TRUE. The default is FALSE, reboot
+        into normal mode.
+
+        flush_dns - Does not clear the DNS cache by default. DNS clients
+        temporarily store system hostnames. Flushing the DNS allows you to clear
+        those names from memory. This parameter applies to the local Windows
+        system.
+
+        timeout - The time, in milliseconds, that the function waits to
+        establish a connection before it returns an error. The default is
+        90,000 ms (90 s).
+
+        Returns the new IP address of the rebooted system. This IP address may
+        differ from the previous IP address if the system acquires a different
+        IP address from the DHCP server.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         new_ip_address = nisyscfg.types.simple_string()
         error_code = self._library.Restart(self._session, sync_call, install_mode, flush_dns, timeout, new_ip_address)
         nisyscfg.errors.handle_error(self, error_code)
         return c_string_decode(new_ip_address.value)
 
-    def get_available_software_components(self, item_types=nisyscfg.enums.IncludeComponentTypes.AllVisible):
+    def get_available_software_components(self, item_types=nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE):
+        """
+        Retrieves a list of software components on the local system that are
+        available for installation to the specified target.
+
+        item_types - Allows inclusion of hidden software installed on the target
+        when ALL_VISIBLE_AND_HIDDEN is selected. Hidden software is not listed
+        by default.
+        ====================== =================================================
+        Item Types             Description
+        ---------------------- -------------------------------------------------
+        ALL_VISIBLE            Specifies to return all visible software
+                               components. This includes all standard, startup,
+                               and essential components.
+        ALL_VISIBLE_AND_HIDDEN Specifies to return all visible and hidden
+                               software components.
+        ONLY_STANDARD          Specifies to only return standard software
+                               components.
+        ONLY_STARTUP           Specifies to only return components that are
+                               startup applications.
+        ====================== =================================================
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         software_component_handle = nisyscfg.types.EnumSoftwareComponentHandle()
         error_code = self._library.GetAvailableSoftwareComponents(self._session, item_types, ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)
@@ -95,7 +248,34 @@ class Session(object):
             self._children.append(iter)
             return iter
 
-    def get_installed_software_components(self, item_types=nisyscfg.enums.IncludeComponentTypes.AllVisible, cached=False):
+    def get_installed_software_components(self, item_types=nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE, cached=False):
+        """
+        Retrieves a list of software components installed on a system.
+
+        item_types - Allows inclusion of hidden software installed on the target
+        when ALL_VISIBLE_AND_HIDDEN is selected. Hidden software is not listed
+        by default.
+        ====================== =================================================
+        Item Types             Description
+        ---------------------- -------------------------------------------------
+        ALL_VISIBLE            Specifies to return all visible software
+                               components. This includes all standard, startup,
+                               and essential components.
+        ALL_VISIBLE_AND_HIDDEN Specifies to return all visible and hidden
+                               software components.
+        ONLY_STANDARD          Specifies to only return standard software
+                               components.
+        ONLY_STARTUP           Specifies to only return components that are
+                               startup applications.
+        ====================== =================================================
+
+        cached - Returns information that has already been read from the
+        specified real-time system if TRUE. The system is contacted again for
+        the information by default.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         software_component_handle = nisyscfg.types.EnumSoftwareComponentHandle()
         error_code = self._library.GetInstalledSoftwareComponents(self._session, item_types, cached, ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)

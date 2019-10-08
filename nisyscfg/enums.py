@@ -56,10 +56,10 @@ class ComponentType(CtypesEnum):
 
 
 class IncludeComponentTypes(CtypesEnum):
-    AllVisible = 0
-    AllVisibleAndHidden = 1
-    OnlyStandard = 2
-    OnlyStartup = 3
+    ALL_VISIBLE = 0
+    ALL_VISIBLE_AND_HIDDEN = 1
+    ONLY_STANDARD = 2
+    ONLY_STARTUP = 3
 
 
 class VersionSelectionMode(CtypesEnum):
@@ -124,20 +124,20 @@ class Bool(CtypesEnum):
 
 
 class Locale(CtypesEnum):
-    Default = 0
-    ChineseSimplified = 2052
-    English = 1033
-    French = 1036
-    German = 1031
-    Japanese = 1041
-    Korean = 1042
+    DEFAULT = 0
+    CHINESE_SIMPLIFIED = 2052
+    ENGLISH = 1033
+    FRENCH = 1036
+    GERMAN = 1031
+    JAPANESE = 1041
+    KOREAN = 1042
 
 
 class FilterMode(CtypesEnum):
-    MatchValuesAll = 1
-    MatchValuesAny = 2
-    MatchValuesNone = 3
-    AllPropertiesExist = 4
+    MATCH_VALUES_ALL = 1
+    MATCH_VALUES_ANY = 2
+    MATCH_VALUES_NONE = 3
+    ALL_PROPERTIES_EXIST = 4
 
 
 class ServiceType(CtypesEnum):
