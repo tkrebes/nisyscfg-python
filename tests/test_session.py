@@ -311,7 +311,7 @@ def test_find_hardware_with_default_arguments(lib_mock):
     expected_calls = [
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MatchValuesAll, None, b'', mock.ANY),
+        mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MATCH_VALUES_ALL, None, b'', mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
     ]
@@ -328,7 +328,7 @@ def test_find_hardware_with_filter_properties_specified(lib_mock):
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
         mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), nisyscfg.FilterProperties.EXPERT_NAME._id, nisyscfg.enums.PropertyType.String, b'my_expert'),
-        mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MatchValuesAll, mock.ANY, b'', mock.ANY),
+        mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MATCH_VALUES_ALL, mock.ANY, b'', mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
@@ -374,7 +374,7 @@ def test_find_hardware_with_passed_filter_properties_specified(lib_mock, propert
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
         mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), property_id, property_type, expected_value),
-        mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MatchValuesAll, mock.ANY, b'', mock.ANY),
+        mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MATCH_VALUES_ALL, mock.ANY, b'', mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
