@@ -21,10 +21,13 @@ from nisyscfg.enums import (
 
 
 class Property(object):
-    pass
+    __slots__ = ()
 
 
 class TypeProperty(Property):
+
+    __slots__ = '_id', '_enum', '_readable', '_writeable'
+
     def __init__(self, id, enum=None, readable=True, writeable=True):
         self._id = id
         self._enum = enum
@@ -33,6 +36,9 @@ class TypeProperty(Property):
 
 
 class BoolProperty(TypeProperty):
+
+    __slots__ = ()
+
     def get(self, bag):
         value = bag.get_bool_property(self._id)
         if self._enum:
@@ -44,6 +50,9 @@ class BoolProperty(TypeProperty):
 
 
 class IntProperty(TypeProperty):
+
+    __slots__ = ()
+
     def get(self, bag):
         value = bag.get_int_property(self._id)
         if self._enum:
@@ -55,6 +64,9 @@ class IntProperty(TypeProperty):
 
 
 class UnsignedIntProperty(TypeProperty):
+
+    __slots__ = ()
+
     def get(self, bag):
         value = bag.get_unsigned_int_property(self._id)
         if self._enum:
@@ -66,6 +78,9 @@ class UnsignedIntProperty(TypeProperty):
 
 
 class DoubleProperty(TypeProperty):
+
+    __slots__ = ()
+
     def get(self, bag):
         return bag.get_double_property(self._id)
 
@@ -74,6 +89,9 @@ class DoubleProperty(TypeProperty):
 
 
 class StringProperty(TypeProperty):
+
+    __slots__ = ()
+
     def get(self, bag):
         return bag.get_string_property(self._id)
 
@@ -82,6 +100,9 @@ class StringProperty(TypeProperty):
 
 
 class TimestampProperty(TypeProperty):
+
+    __slots__ = ()
+
     def get(self, bag):
         raise NotImplementedError
 
@@ -90,6 +111,9 @@ class TimestampProperty(TypeProperty):
 
 
 class IndexedPropertyItems(object):
+
+    __slots__ = '_bag', '_tag'
+
     def __init__(self, bag, tag):
         self._bag = bag
         self._tag = tag
@@ -110,6 +134,9 @@ class IndexedPropertyItems(object):
 
     def __iter__(self):
         class IndexedPropertyItemsIter(object):
+
+            __slots__ = '_properties', '_index'
+
             def __init__(self, properties):
                 self._properties = properties
                 self._index = -1
@@ -127,6 +154,9 @@ class IndexedPropertyItems(object):
 
 
 class IndexedProperty(Property):
+
+    __slots__ = '_id', '_count_property', '_enum', '_readable', '_writeable'
+
     def __init__(self, id, count_property, enum=None, readable=True, writeable=True):
         self._id = id
         self._count_property = count_property
@@ -143,6 +173,9 @@ class IndexedProperty(Property):
 
 
 class IndexedBoolProperty(IndexedProperty):
+
+    __slots__ = ()
+
     def get_index(self, bag, index):
         value = bag.get_indexed_bool_property(self._id, index)
         if self._enum:
@@ -151,6 +184,9 @@ class IndexedBoolProperty(IndexedProperty):
 
 
 class IndexedIntProperty(IndexedProperty):
+
+    __slots__ = ()
+
     def get_index(self, bag, index):
         value = bag.get_indexed_int_property(self._id, index)
         if self._enum:
@@ -159,6 +195,9 @@ class IndexedIntProperty(IndexedProperty):
 
 
 class IndexedUnsignedIntProperty(IndexedProperty):
+
+    __slots__ = ()
+
     def get_index(self, bag, index):
         value = bag.get_indexed_unsigned_int_property(self._id, index)
         if self._enum:
@@ -167,16 +206,25 @@ class IndexedUnsignedIntProperty(IndexedProperty):
 
 
 class IndexedDoubleProperty(IndexedProperty):
+
+    __slots__ = ()
+
     def get_index(self, bag, index):
         return bag.get_indexed_double_property(self._id, index)
 
 
 class IndexedStringProperty(IndexedProperty):
+
+    __slots__ = ()
+
     def get_index(self, bag, index):
         return bag.get_indexed_string_property(self._id, index)
 
 
 class IndexedTimestampProperty(IndexedProperty):
+
+    __slots__ = ()
+
     def get_index(self, bag, index):
         raise NotImplementedError
 
