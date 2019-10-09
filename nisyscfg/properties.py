@@ -111,9 +111,6 @@ class TimestampProperty(TypeProperty):
 
 
 class IndexedPropertyItems(object):
-
-    __slots__ = '_bag', '_tag'
-
     def __init__(self, bag, tag):
         self._bag = bag
         self._tag = tag
