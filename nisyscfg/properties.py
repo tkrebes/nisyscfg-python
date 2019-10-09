@@ -77,6 +77,17 @@ class UnsignedIntProperty(TypeProperty):
         bag.set_unsigned_int_property(self._id, value)
 
 
+class BitmaskProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag):
+        value = bag.get_unsigned_int_property(self._id)
+        if self._enum:
+            return [mask for mask in self._enum if value & mask]
+        return [value]
+
+
 class DoubleProperty(TypeProperty):
 
     __slots__ = ()
