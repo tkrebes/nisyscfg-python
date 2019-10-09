@@ -13,6 +13,22 @@ push a branch with your changes to your project, and then submit a pull request.
 See [GitHub's official documentation](https://help.github.com/articles/using-pull-requests/)
 for more details.
 
+
+Contributing
+------------
+
+After you've verified that you can successfully build and run unit tests for
+**[nisyscfg-python](https://github.com/tkrebes/nisyscfg-python)**, you may fork the repository and
+begin contributing to to the project.
+
+1. Write a failing test for the new feature / bugfix.
+2. Make your change.
+3. Verify all tests, including the new ones, pass.
+4. Update CHANGELOG.md if applicable.
+5. On GitHub, send a New pull request to the main repository's master branch. GitHub
+   pull requests are the expected method of code collaboration on this project.
+
+
 Developer Certificate of Origin (DCO)
 -------------------------------------
 
