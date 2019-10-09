@@ -32,7 +32,7 @@ if '__main__' == __name__:
 
     port_name = sys.argv[1]
     mode = {
-        'on': nisyscfg.xnet.enums.XnetIntfBlink.ENABLE,
-        'off': nisyscfg.xnet.enums.XnetIntfBlink.DISABLE,
+        'on': nisyscfg.xnet.enums.IntferfaceBlink.ENABLE,
+        'off': nisyscfg.xnet.enums.IntferfaceBlink.DISABLE,
     }[sys.argv[2].lower()]
     nixnet_blink_port_led(port_name, mode)
