@@ -1,36 +1,36 @@
 from nisyscfg.enums import BaseEnum
 
 
-class IntferfaceEnetPortMode(BaseEnum):
+class EnetPortMode(BaseEnum):
     DIRECT = 0
     TAP = 1
 
 
-class IntferfaceEnetPhyState(BaseEnum):
+class EnetPhyState(BaseEnum):
     SLAVE = 0
     MASTER = 1
 
 
-class IntferfaceBlink(BaseEnum):
+class Blink(BaseEnum):
     DISABLE = 0
     ENABLE = 1
 
 
-class IntferfaceProtocol(BaseEnum):
+class Protocol(BaseEnum):
     CAN = 0
     FLEXRAY = 1
     LIN = 2
     UNKNOWN = -2
 
 
-class IntferfaceCanTransceiverCapability(BaseEnum):
+class CanTransceiverCapability(BaseEnum):
     HS = 0
     LS = 1
     XS = 3
     XS_WITH_HS_OR_LS = 4
 
 
-class IntferfaceDongleId(BaseEnum):
+class DongleId(BaseEnum):
     LS_CAN = 1
     HS_CAN = 2
     SW_CAN = 3
@@ -40,7 +40,7 @@ class IntferfaceDongleId(BaseEnum):
     UNKNOWN = 14
 
 
-class IntferfaceDongleState(BaseEnum):
+class DongleState(BaseEnum):
     NO_DONGLE_NO_EXTERNAL_POWER = 1
     NO_DONGLE_HAS_EXTERNAL_POWER = 2
     HAS_DONGLE_NO_EXTERNAL_POWER = 3
@@ -50,6 +50,6 @@ class IntferfaceDongleState(BaseEnum):
     OVERCURRENT = 14
 
 
-class IntferfaceEnetLinkSpeed(BaseEnum):
+class EnetLinkSpeed(BaseEnum):
     LINK_DOWN = 0
     HUNDRED_MEGABIT = 1
