@@ -325,8 +325,9 @@ class ExpertInfoIterator(object):
 
 class Filter(object):
     def __init__(self, session, library):
-        self.__dict__['_handle'] = nisyscfg.types.FilterHandle()
-        self.__dict__['_library'] = library
+        self._handle = nisyscfg.types.FilterHandle()
+        self._library = library
+        self._property_bag = nisyscfg.properties.PropertyBag(setter=self._set_property_with_type)
         error_code = self._library.CreateFilter(session, ctypes.pointer(self._handle))
         nisyscfg.errors.handle_error(self, error_code)
 
@@ -339,7 +340,7 @@ class Filter(object):
             nisyscfg.errors.handle_error(self, error_code)
             self._handle = None
 
-    def _set_property(self, id, value, c_type, nisyscfg_type):
+    def _set_property_with_type(self, id, value, c_type, nisyscfg_type):
         if c_type == ctypes.c_char_p:
             value = c_string_encode(value)
         elif issubclass(c_type, nisyscfg.enums.BaseEnum):
@@ -351,25 +352,7 @@ class Filter(object):
         nisyscfg.errors.handle_error(self, error_code)
 
     def __setitem__(self, tag, value):
-        tag.set(self, value)
-
-    def set_bool_property(self, id, value):
-        self._set_property(id, value, nisyscfg.enums.Bool, nisyscfg.enums.PropertyType.BOOL)
-
-    def set_int_property(self, id, value):
-        self._set_property(id, value, ctypes.c_int, nisyscfg.enums.PropertyType.INT)
-
-    def set_unsigned_int_property(self, id, value):
-        self._set_property(id, value, ctypes.c_uint, nisyscfg.enums.PropertyType.UNSIGNED_INT)
-
-    def set_double_property(self, id, value):
-        self._set_property(id, value, ctypes.c_double, nisyscfg.enums.PropertyType.DOUBLE)
-
-    def set_string_property(self, id, value):
-        self._set_property(id, value, ctypes.c_char_p, nisyscfg.enums.PropertyType.STRING)
-
-    def set_timestamp_property(self, id, value):
-        raise NotImplementedError
+        tag.set(self._property_bag, value)
 
 
 class HardwareResourceIterator(object):
@@ -417,8 +400,13 @@ class _NoDefault(object):
 
 class HardwareResource(object):
     def __init__(self, handle, library):
-        self.__dict__['_handle'] = handle
-        self.__dict__['_library'] = library
+        self._handle = handle
+        self._library = library
+        self._property_bag = nisyscfg.properties.PropertyBag(
+            setter=self._set_property,
+            getter=self._get_property,
+            indexed_getter=self._get_indexed_property
+        )
 
     def __del__(self):
         self.close()
@@ -429,7 +417,7 @@ class HardwareResource(object):
             nisyscfg.errors.handle_error(self, error_code)
             self._handle = None
 
-    def _get_resource_property(self, id, c_type):
+    def _get_property(self, id, c_type):
         if c_type == ctypes.c_char_p:
             value = nisyscfg.types.simple_string()
             value_arg = value
@@ -448,7 +436,7 @@ class HardwareResource(object):
 
         return c_string_decode(value.value)
 
-    def _get_resource_indexed_property(self, id, index, c_type):
+    def _get_indexed_property(self, id, index, c_type):
         if c_type == ctypes.c_char_p:
             value = nisyscfg.types.simple_string()
             value_arg = value
@@ -468,7 +456,7 @@ class HardwareResource(object):
         return c_string_decode(value.value)
 
     def __getitem__(self, tag):
-        return tag.get(self)
+        return tag.get(self._property_bag)
 
     def get_property(self, tag, default=_NoDefault()):
         try:
@@ -478,43 +466,7 @@ class HardwareResource(object):
                 raise
             return default
 
-    def get_bool_property(self, id):
-        return self._get_resource_property(id, nisyscfg.enums.Bool)
-
-    def get_int_property(self, id):
-        return self._get_resource_property(id, ctypes.c_int)
-
-    def get_unsigned_int_property(self, id):
-        return self._get_resource_property(id, ctypes.c_uint)
-
-    def get_double_property(self, id):
-        return self._get_resource_property(id, ctypes.c_double)
-
-    def get_string_property(self, id):
-        return self._get_resource_property(id, ctypes.c_char_p)
-
-    def get_timestamp_property(self, id):
-        raise NotImplementedError
-
-    def get_indexed_bool_property(self, id, index):
-        return self._get_resource_indexed_property(id, index, nisyscfg.enums.Bool)
-
-    def get_indexed_int_property(self, id, index):
-        return self._get_resource_indexed_property(id, index, ctypes.c_int)
-
-    def get_indexed_unsigned_int_property(self, id, index):
-        return self._get_resource_indexed_property(id, index, ctypes.c_uint)
-
-    def get_indexed_double_property(self, id, index):
-        return self._get_resource_indexed_property(id, index, ctypes.c_double)
-
-    def get_indexed_string_property(self, id, index):
-        return self._get_resource_indexed_property(id, index, ctypes.c_char_p)
-
-    def get_indexed_timestamp_property(self, id, index):
-        raise NotImplementedError
-
-    def _set_property(self, id, value, c_type):
+    def _set_property(self, id, value, c_type, nisyscfg_type):
         if c_type == ctypes.c_char_p:
             value = c_string_encode(value)
         elif issubclass(c_type, nisyscfg.enums.BaseEnum):
@@ -526,25 +478,7 @@ class HardwareResource(object):
         nisyscfg.errors.handle_error(self, error_code)
 
     def __setitem__(self, tag, value):
-        tag.set(self, value)
-
-    def set_bool_property(self, id, value):
-        self._set_property(id, value, nisyscfg.enums.Bool)
-
-    def set_int_property(self, id, value):
-        self._set_property(id, value, ctypes.c_int)
-
-    def set_unsigned_int_property(self, id, value):
-        self._set_property(id, value, ctypes.c_uint)
-
-    def set_double_property(self, id, value):
-        self._set_property(id, value, ctypes.c_double)
-
-    def set_string_property(self, id, value):
-        self._set_property(id, value, ctypes.c_char_p)
-
-    def set_timestamp_property(self, id, value):
-        raise NotImplementedError
+        tag.set(self._property_bag, value)
 
     def rename(self, new_name, overwrite_conflict=False, update_dependencies=False):
         error_code = self._library.RenameResource(
