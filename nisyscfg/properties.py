@@ -1,7 +1,9 @@
+import ctypes
 from nisyscfg.enums import (
     AccessType,
     AdapterMode,
     AdapterType,
+    Bool,
     BusType,
     ConnectionType,
     EapType,
@@ -14,6 +16,7 @@ from nisyscfg.enums import (
     LinkSpeed,
     ModuleProgramMode,
     PacketDetection,
+    PropertyType,
     SecurityType,
     ServiceType,
     SwitchState,
@@ -234,6 +237,70 @@ class IndexedTimestampProperty(IndexedProperty):
     __slots__ = ()
 
     def get_index(self, bag, index):
+        raise NotImplementedError
+
+
+class PropertyBag(object):
+
+    __slots__ = '_getter', '_setter', '_indexed_getter'
+
+    def __init__(self, setter=None, getter=None, indexed_getter=None):
+        self._setter = setter
+        self._getter = getter
+        self._indexed_getter = indexed_getter
+
+    def set_bool_property(self, id, value):
+        self._setter(id, value, Bool, PropertyType.BOOL)
+
+    def set_int_property(self, id, value):
+        self._setter(id, value, ctypes.c_int, PropertyType.INT)
+
+    def set_unsigned_int_property(self, id, value):
+        self._setter(id, value, ctypes.c_uint, PropertyType.UNSIGNED_INT)
+
+    def set_double_property(self, id, value):
+        self._setter(id, value, ctypes.c_double, PropertyType.DOUBLE)
+
+    def set_string_property(self, id, value):
+        self._setter(id, value, ctypes.c_char_p, PropertyType.STRING)
+
+    def set_timestamp_property(self, id, value):
+        raise NotImplementedError
+
+    def get_bool_property(self, id):
+        return self._getter(id, Bool)
+
+    def get_int_property(self, id):
+        return self._getter(id, ctypes.c_int)
+
+    def get_unsigned_int_property(self, id):
+        return self._getter(id, ctypes.c_uint)
+
+    def get_double_property(self, id):
+        return self._getter(id, ctypes.c_double)
+
+    def get_string_property(self, id):
+        return self._getter(id, ctypes.c_char_p)
+
+    def get_timestamp_property(self, id):
+        raise NotImplementedError
+
+    def get_indexed_bool_property(self, id, index):
+        return self._indexed_getter(id, index, Bool)
+
+    def get_indexed_int_property(self, id, index):
+        return self._indexed_getter(id, index, ctypes.c_int)
+
+    def get_indexed_unsigned_int_property(self, id, index):
+        return self._indexed_getter(id, index, ctypes.c_uint)
+
+    def get_indexed_double_property(self, id, index):
+        return self._indexed_getter(id, index, ctypes.c_double)
+
+    def get_indexed_string_property(self, id, index):
+        return self._indexed_getter(id, index, ctypes.c_char_p)
+
+    def get_indexed_timestamp_property(self, id, index):
         raise NotImplementedError
 
 
