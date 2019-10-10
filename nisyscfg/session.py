@@ -12,56 +12,56 @@ class _NoDefault(object):
 
 
 class Session(object):
+    """
+    Initializes a system configuration session with a specific system.
+
+    This function communicates to the device at the specified address. If the
+    device is no longer online, but it has previously been discovered in
+    Measurement & Automation Explorer (MAX), this function succeeds, allowing
+    you to retrieve cached information about the device.
+
+    target - Specifies the IP address (ex. "224.102.13.24" ), MAC address
+    (ex. "00:80:12:34:56:AB" ), or DNS name (ex. "myhost" ) of the target on a
+    local or Real-Time system. The target defaults to the local system. Values
+    such as a None, an empty string, and the strings localhost or 127.0.0.1
+    also mean the local system.
+
+    username - Specifies the username for the system you are initializing.
+    Leave this parameter None if your target is running LabWindows/CVI 2009
+    Real-Time Module or earlier or if you are connecting to the local
+    system.
+
+    password - Specifies the password for the system you are initializing.
+    Leave this parameter None if no password has been set or if you are
+    connecting to the local system.
+
+    language - Specifies the language.
+    ================== =========================================================
+    Language           Description
+    ------------------ ---------------------------------------------------------
+    DEFAULT            Automatically chooses the language based on local
+                       Windows settings.
+    ENGLISH            English
+    FRENCH             French
+    GERMAN             German
+    JAPANESE           Japanese
+    KOREAN             Korean
+    CHINESE_SIMPLIFIED Simplified Chinese
+    ================== =========================================================
+
+    force_property_refresh - Forces properties to be refreshed every time they
+    are read by default. If FALSE, properties are queried once and cached in
+    memory, which can optimize performance.
+
+    timeout - Specifies the time, in milliseconds, that the function waits
+    before the operation times out. When the operation succeeds, the session
+    handle that is returned is set to the default, which is defined as
+    300000 (5 minutes).
+
+    Raises an nisyscfg.errors.LibraryError exception in the event of an error.
+    """
+
     def __init__(self, target=None, username=None, password=None, language=nisyscfg.enums.Locale.DEFAULT, force_property_refresh=True, timeout=60000):
-        """
-        Initializes a system configuration session with a specific system.
-
-        This function communicates to the device at the specified address. If
-        the device is no longer online, but it has previously been discovered in
-        Measurement & Automation Explorer (MAX), this function succeeds,
-        allowing you to retrieve cached information about the device.
-
-        target - Specifies the IP address (ex. "224.102.13.24" ), MAC address
-        (ex. "00:80:12:34:56:AB" ), or DNS name (ex. "myhost" ) of the target on
-        a local or Real-Time system. The target defaults to the local system.
-        Values such as a None, an empty string, and the strings localhost or
-        127.0.0.1 also mean the local system.
-
-        username - Specifies the username for the system you are initializing.
-        Leave this parameter None if your target is running LabWindows/CVI 2009
-        Real-Time Module or earlier or if you are connecting to the local
-        system.
-
-        password - Specifies the password for the system you are initializing.
-        Leave this parameter None if no password has been set or if you are
-        connecting to the local system.
-
-        language - Specifies the language.
-        ================== =====================================================
-        Language           Description
-        ------------------ -----------------------------------------------------
-        DEFAULT            Automatically chooses the language based on local
-                           Windows settings.
-        ENGLISH            English
-        FRENCH             French
-        GERMAN             German
-        JAPANESE           Japanese
-        KOREAN             Korean
-        CHINESE_SIMPLIFIED Simplified Chinese
-        ================== =====================================================
-
-        force_property_refresh - Forces properties to be refreshed every time
-        they are read by default. If FALSE, properties are queried once and
-        cached in memory, which can optimize performance.
-
-        timeout - Specifies the time, in milliseconds, that the function waits
-        before the operation times out. When the operation succeeds, the session
-        handle that is returned is set to the default, which is defined as
-        300000 (5 minutes).
-
-        Raises an nisyscfg.errors.LibraryError exception in the event of an
-        error.
-        """
         self._children = []
         self._session = nisyscfg.types.SessionHandle()
         self._library = nisyscfg._library_singleton.get()
@@ -293,12 +293,13 @@ class Session(object):
             return iter
 
     @property
-    def _resource(self):
-        if not hasattr(self, '_resource_instance'):
+    def resource(self):
+        """System resource properties"""
+        if not hasattr(self, '_resource'):
             resource_handle = self._get_property(16941086, nisyscfg.types.ResourceHandle)
-            self._resource_instance = HardwareResource(resource_handle, self._library)
-            self._children.append(self._resource_instance)
-        return self._resource_instance
+            self._resource = HardwareResource(resource_handle, self._library)
+            self._children.append(self._resource)
+        return self._resource
 
     def _get_property(self, id, c_type):
         if c_type == ctypes.c_char_p:
@@ -323,9 +324,16 @@ class Session(object):
         if isinstance(tag.group, nisyscfg.properties.SystemGroup):
             return tag.get(self._property_bag)
         else:
-            return self._resource[tag]
+            return self.resource[tag]
 
     def get_property(self, tag, default=_NoDefault()):
+        """
+        Returns value of system property
+
+        Return the value for system property specified by the tag, else default.
+        If default is not given and the property does not exist, this function
+        raises an nisyscfg.errors.LibraryError exception.
+        """
         try:
             return self[tag]
         except nisyscfg.errors.LibraryError as err:
@@ -348,13 +356,32 @@ class Session(object):
         if isinstance(tag.group, nisyscfg.properties.SystemGroup):
             tag.set(self._property_bag, value)
         else:
-            self._resource[tag] = value
+            self.resource[tag] = value
 
     def save_changes(self):
+        """
+        Saves changes made to systems.
+
+        Returns tuple (restart_required, result)
+
+            restart_required - Specifies whether the changes require a reboot.
+            If TRUE, call restart().
+
+            result - A string containing results of any errors that may have
+            occurred during execution.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
         restart_required = ctypes.c_int()
+        c_detailed_description = ctypes.POINTER(ctypes.c_char)()
         error_code = self._library.SaveSystemChanges(self._session, restart_required, None)
+        if c_detailed_description:
+            detailed_description = c_string_decode(ctypes.cast(c_detailed_description, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_detailed_description)
         nisyscfg.errors.handle_error(self, error_code)
-        return restart_required.value != 0
+        nisyscfg.errors.handle_error(self, error_code_2)
+        return restart_required.value != 0, detailed_description
 
 
 class ExpertInfoIterator(object):
