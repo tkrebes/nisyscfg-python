@@ -24,7 +24,7 @@ from nisyscfg.enums import (
 
 
 class Property(object):
-    __slots__ = ()
+    __slots__ = ('group',)
 
 
 class TypeProperty(Property):
@@ -304,7 +304,30 @@ class PropertyBag(object):
         raise NotImplementedError
 
 
-class Resource(object):
+class PropertyGroupMeta(type):
+    def __getattribute__(cls, name):
+        value = type.__getattribute__(cls, name)
+        if isinstance(value, Property):
+            value.group = cls
+        return value
+
+
+PropertyGroup = PropertyGroupMeta('PropertyGroup', (object,), {})
+
+
+class ResourceGroup(PropertyGroup):
+    pass
+
+
+class SystemGroup(PropertyGroup):
+    pass
+
+
+class FilterGroup(PropertyGroup):
+    pass
+
+
+class Resource(ResourceGroup):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     CONNECTS_TO_BUS_TYPE = IntProperty(16785408, enum=BusType)
@@ -409,7 +432,7 @@ class Resource(object):
     NUMBER_OF_USER_SWITCHES = IntProperty(17293312)
 
 
-class IndexedResource(object):
+class IndexedResource(ResourceGroup):
     SERVICE_TYPE = IndexedIntProperty(17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType)
     AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS)
     WLAN_AVAILABLE_SSID = IndexedStringProperty(219336704, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS)
@@ -445,7 +468,7 @@ class IndexedResource(object):
     EXPERT_USER_ALIAS = IndexedStringProperty(16904192, Resource.NUMBER_OF_EXPERTS)
 
 
-class System(object):
+class System(SystemGroup):
     DEVICE_CLASS = StringProperty(16941057)
     PRODUCT_ID = IntProperty(16941058)
     FILE_SYSTEM = IntProperty(16941060, enum=FileSystemMode)
@@ -470,7 +493,7 @@ class System(object):
     MEMORY_VIRT_FREE = DoubleProperty(219496448)
     PRIMARY_DISK_TOTAL = DoubleProperty(219291648)
     PRIMARY_DISK_FREE = DoubleProperty(219295744)
-    # TODO(tkrebes): Implement
+    # Implemented as a property on nisyscfg.Session
     # SYSTEM_RESOURCE_HANDLE = IntProperty(16941086, enum=ResourceHandle)
     IMAGE_DESCRIPTION = StringProperty(219516928)
     IMAGE_ID = StringProperty(219521024)
@@ -491,7 +514,7 @@ class System(object):
     SUBNET_MASK = StringProperty(16941083)
 
 
-class Filter(object):
+class Filter(FilterGroup):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     SERVICE_TYPE = IntProperty(17014784, enum=ServiceType)

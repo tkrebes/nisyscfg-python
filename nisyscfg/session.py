@@ -7,6 +7,10 @@ from nisyscfg._lib import c_string_decode
 from nisyscfg._lib import c_string_encode
 
 
+class _NoDefault(object):
+    pass
+
+
 class Session(object):
     def __init__(self, target=None, username=None, password=None, language=nisyscfg.enums.Locale.DEFAULT, force_property_refresh=True, timeout=60000):
         """
@@ -61,6 +65,10 @@ class Session(object):
         self._children = []
         self._session = nisyscfg.types.SessionHandle()
         self._library = nisyscfg._library_singleton.get()
+        self._property_bag = nisyscfg.properties.PropertyBag(
+            setter=self._set_property,
+            getter=self._get_property,
+        )
         error_code = self._library.InitializeSession(
             c_string_encode(target),
             c_string_encode(username),
@@ -284,6 +292,70 @@ class Session(object):
             self._children.append(iter)
             return iter
 
+    @property
+    def _resource(self):
+        if not hasattr(self, '_resource_instance'):
+            resource_handle = self._get_property(16941086, nisyscfg.types.ResourceHandle)
+            self._resource_instance = HardwareResource(resource_handle, self._library)
+            self._children.append(self._resource_instance)
+        return self._resource_instance
+
+    def _get_property(self, id, c_type):
+        if c_type == ctypes.c_char_p:
+            value = nisyscfg.types.simple_string()
+            value_arg = value
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
+            value = ctypes.c_int()
+            value_arg = ctypes.pointer(value)
+        else:
+            value = c_type(0)
+            value_arg = ctypes.pointer(value)
+
+        error_code = self._library.GetSystemProperty(self._session, id, value_arg)
+        nisyscfg.errors.handle_error(self, error_code)
+
+        if issubclass(c_type, nisyscfg.enums.BaseEnum):
+            return c_type(value.value)
+
+        return c_string_decode(value.value)
+
+    def __getitem__(self, tag):
+        if isinstance(tag.group, nisyscfg.properties.SystemGroup):
+            return tag.get(self._property_bag)
+        else:
+            return self._resource[tag]
+
+    def get_property(self, tag, default=_NoDefault()):
+        try:
+            return self[tag]
+        except nisyscfg.errors.LibraryError as err:
+            if err.code != nisyscfg.errors.Status.PROP_DOES_NOT_EXIST or isinstance(default, _NoDefault):
+                raise
+            return default
+
+    def _set_property(self, id, value, c_type, nisyscfg_type):
+        if c_type == ctypes.c_char_p:
+            value = c_string_encode(value)
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
+            value = ctypes.c_int(value)
+        else:
+            value = c_type(value)
+
+        error_code = self._library.SetSystemProperty(self._session, id, value)
+        nisyscfg.errors.handle_error(self, error_code)
+
+    def __setitem__(self, tag, value):
+        if isinstance(tag.group, nisyscfg.properties.SystemGroup):
+            tag.set(self._property_bag, value)
+        else:
+            self._resource[tag] = value
+
+    def save_changes(self):
+        restart_required = ctypes.c_int()
+        error_code = self._library.SaveSystemChanges(self._session, restart_required, None)
+        nisyscfg.errors.handle_error(self, error_code)
+        return restart_required.value != 0
+
 
 class ExpertInfoIterator(object):
     def __init__(self, handle, library):
@@ -392,10 +464,6 @@ class HardwareResourceIterator(object):
 
     def next(self):
         return self.__next__()
-
-
-class _NoDefault(object):
-    pass
 
 
 class HardwareResource(object):
