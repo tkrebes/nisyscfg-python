@@ -506,6 +506,17 @@ class HardwareResource(object):
     def __del__(self):
         self.close()
 
+    def __repr__(self):
+        return 'HardwareResource(name={})'.format(self.name)
+
+    @property
+    def name(self):
+        name = self[nisyscfg.IndexedResourceProperties.EXPERT_USER_ALIAS][0]
+        # If the resource doesn't have an alias, use the resource name instead
+        if not name:
+            name = self[nisyscfg.IndexedResourceProperties.EXPERT_RESOURCE_NAME][0]
+        return name
+
     def close(self):
         if self._handle:
             error_code = self._library.CloseHandle(self._handle)
