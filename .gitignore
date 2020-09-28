@@ -41,7 +41,7 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
-nosetests.xml
+junit-*.xml
 coverage.xml
 *.cover
 .hypothesis/

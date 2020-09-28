@@ -26,7 +26,6 @@ def c_string_encode(value):
 
 
 def c_string_decode(value):
-    # Only decode to Unicode in Python 3 and higher.
-    if sys.version_info >= (3,) and isinstance(value, six.binary_type):
+    if isinstance(value, six.binary_type):
         return value.decode(get_syscfg_locale())
     return value

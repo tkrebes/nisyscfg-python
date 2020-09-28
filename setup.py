@@ -22,7 +22,6 @@ setup(
     version=get_version(title),
     description="NI System Configuration Python API",
     install_requires=[
-        'enum34;python_version<"3.4"',
         'six'
     ],
     author='National Instruments',
@@ -41,13 +40,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: System :: Hardware :: Hardware Drivers"
     ],
 )
