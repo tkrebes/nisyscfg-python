@@ -4,9 +4,6 @@ Python bindings for NI System Configuration. See `GitHub <https://github.com/tkr
 
 Author: National Instruments
 
-.. image:: https://travis-ci.org/tkrebes/nisyscfg-python.svg?branch=master
-    :target: https://travis-ci.org/tkrebes/nisyscfg-python
-
 About
 =====
 
@@ -18,7 +15,7 @@ object-oriented wrapper around the NI System Configuration C API using the
 
 **nisyscfg** supports only the Windows and Linux operating systems.
 
-**nisyscfg** supports CPython 2.7, 3.4+.
+**nisyscfg** supports CPython 3.5+ and PyPy3.
 
 Installation
 ============
