@@ -23,223 +23,6 @@ from nisyscfg.enums import (
 )
 
 
-class Property(object):
-    __slots__ = ('group',)
-
-
-class TypeProperty(Property):
-
-    __slots__ = '_id', '_enum', '_readable', '_writeable'
-
-    def __init__(self, id, enum=None, readable=True, writeable=True):
-        self._id = id
-        self._enum = enum
-        self._readable = readable
-        self._writeable = writeable
-
-
-class BoolProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, bag):
-        value = bag.get_bool_property(self._id)
-        if self._enum:
-            return self._enum(value)
-        return value
-
-    def set(self, bag, value):
-        bag.set_bool_property(self._id, value)
-
-
-class IntProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, bag):
-        value = bag.get_int_property(self._id)
-        if self._enum:
-            return self._enum(value)
-        return value
-
-    def set(self, bag, value):
-        bag.set_int_property(self._id, value)
-
-
-class UnsignedIntProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, bag):
-        value = bag.get_unsigned_int_property(self._id)
-        if self._enum:
-            return self._enum(value)
-        return value
-
-    def set(self, bag, value):
-        bag.set_unsigned_int_property(self._id, value)
-
-
-class BitmaskProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, bag):
-        value = bag.get_unsigned_int_property(self._id)
-        if self._enum:
-            return [mask for mask in self._enum if value & mask]
-        return [value]
-
-
-class DoubleProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, bag):
-        return bag.get_double_property(self._id)
-
-    def set(self, bag, value):
-        bag.set_double_property(self._id, value)
-
-
-class StringProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, bag):
-        return bag.get_string_property(self._id)
-
-    def set(self, bag, value):
-        bag.set_string_property(self._id, value)
-
-
-class TimestampProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, bag):
-        raise NotImplementedError
-
-    def set(self, bag, value):
-        raise NotImplementedError
-
-
-class IndexedPropertyItems(object):
-    def __init__(self, bag, tag):
-        self._bag = bag
-        self._tag = tag
-
-    def __getitem__(self, key):
-        try:
-            key + 1
-        except TypeError:
-            raise KeyError(key)
-        if key >= 0 and key < len(self):
-            return self._tag.get_index(self._bag, key)
-        raise KeyError(key)
-
-    def __len__(self):
-        if not hasattr(self, '_len'):
-            self._len = self._tag.count_property.get(self._bag)
-        return self._len
-
-    def __iter__(self):
-        class IndexedPropertyItemsIter(object):
-
-            __slots__ = '_properties', '_index'
-
-            def __init__(self, properties):
-                self._properties = properties
-                self._index = -1
-
-            def __next__(self):
-                self._index += 1
-                if self._index == len(self._properties):
-                    raise StopIteration()
-                return self._properties[self._index]
-
-            def next(self):
-                return self.__next__()
-
-        return IndexedPropertyItemsIter(self)
-
-
-class IndexedProperty(Property):
-
-    __slots__ = '_id', '_count_property', '_enum', '_readable', '_writeable'
-
-    def __init__(self, id, count_property, enum=None, readable=True, writeable=True):
-        self._id = id
-        self._count_property = count_property
-        self._enum = enum
-        self._readable = readable
-        self._writeable = writeable
-
-    @property
-    def count_property(self):
-        return self._count_property
-
-    def get(self, bag):
-        return IndexedPropertyItems(bag, self)
-
-
-class IndexedBoolProperty(IndexedProperty):
-
-    __slots__ = ()
-
-    def get_index(self, bag, index):
-        value = bag.get_indexed_bool_property(self._id, index)
-        if self._enum:
-            return self._enum(value)
-        return value
-
-
-class IndexedIntProperty(IndexedProperty):
-
-    __slots__ = ()
-
-    def get_index(self, bag, index):
-        value = bag.get_indexed_int_property(self._id, index)
-        if self._enum:
-            return self._enum(value)
-        return value
-
-
-class IndexedUnsignedIntProperty(IndexedProperty):
-
-    __slots__ = ()
-
-    def get_index(self, bag, index):
-        value = bag.get_indexed_unsigned_int_property(self._id, index)
-        if self._enum:
-            return self._enum(value)
-        return value
-
-
-class IndexedDoubleProperty(IndexedProperty):
-
-    __slots__ = ()
-
-    def get_index(self, bag, index):
-        return bag.get_indexed_double_property(self._id, index)
-
-
-class IndexedStringProperty(IndexedProperty):
-
-    __slots__ = ()
-
-    def get_index(self, bag, index):
-        return bag.get_indexed_string_property(self._id, index)
-
-
-class IndexedTimestampProperty(IndexedProperty):
-
-    __slots__ = ()
-
-    def get_index(self, bag, index):
-        raise NotImplementedError
-
-
 class PropertyBag(object):
 
     __slots__ = '_getter', '_setter', '_indexed_getter'
@@ -301,6 +84,223 @@ class PropertyBag(object):
         return self._indexed_getter(id, index, ctypes.c_char_p)
 
     def get_indexed_timestamp_property(self, id, index):
+        raise NotImplementedError
+
+
+class Property(object):
+    __slots__ = ('group',)
+
+
+class TypeProperty(Property):
+
+    __slots__ = '_id', '_enum', '_readable', '_writeable'
+
+    def __init__(self, id, enum=None, *, readable: bool = True, writeable: bool = True):
+        self._id = id
+        self._enum = enum
+        self._readable = readable
+        self._writeable = writeable
+
+
+class BoolProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag: PropertyBag):
+        value = bag.get_bool_property(self._id)
+        if self._enum:
+            return self._enum(value)
+        return value
+
+    def set(self, bag: PropertyBag, value):
+        bag.set_bool_property(self._id, value)
+
+
+class IntProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag: PropertyBag):
+        value = bag.get_int_property(self._id)
+        if self._enum:
+            return self._enum(value)
+        return value
+
+    def set(self, bag: PropertyBag, value):
+        bag.set_int_property(self._id, value)
+
+
+class UnsignedIntProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag: PropertyBag):
+        value = bag.get_unsigned_int_property(self._id)
+        if self._enum:
+            return self._enum(value)
+        return value
+
+    def set(self, bag: PropertyBag, value):
+        bag.set_unsigned_int_property(self._id, value)
+
+
+class BitmaskProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag: PropertyBag):
+        value = bag.get_unsigned_int_property(self._id)
+        if self._enum:
+            return [mask for mask in self._enum if value & mask]
+        return [value]
+
+
+class DoubleProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag: PropertyBag) -> float:
+        return bag.get_double_property(self._id)
+
+    def set(self, bag: PropertyBag, value: float):
+        bag.set_double_property(self._id, value)
+
+
+class StringProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag: PropertyBag) -> str:
+        return bag.get_string_property(self._id)
+
+    def set(self, bag: PropertyBag, value: str):
+        bag.set_string_property(self._id, value)
+
+
+class TimestampProperty(TypeProperty):
+
+    __slots__ = ()
+
+    def get(self, bag: PropertyBag):
+        raise NotImplementedError
+
+    def set(self, bag: PropertyBag, value):
+        raise NotImplementedError
+
+
+class IndexedPropertyItems(object):
+    def __init__(self, bag: PropertyBag, tag):
+        self._bag = bag
+        self._tag = tag
+
+    def __getitem__(self, key):
+        try:
+            key + 1
+        except TypeError:
+            raise KeyError(key)
+        if key >= 0 and key < len(self):
+            return self._tag.get_index(self._bag, key)
+        raise KeyError(key)
+
+    def __len__(self):
+        if not hasattr(self, '_len'):
+            self._len = self._tag.count_property.get(self._bag)
+        return self._len
+
+    def __iter__(self):
+        class IndexedPropertyItemsIter(object):
+
+            __slots__ = '_properties', '_index'
+
+            def __init__(self, properties):
+                self._properties = properties
+                self._index = -1
+
+            def __next__(self):
+                self._index += 1
+                if self._index == len(self._properties):
+                    raise StopIteration()
+                return self._properties[self._index]
+
+            def next(self):
+                return self.__next__()
+
+        return IndexedPropertyItemsIter(self)
+
+
+class IndexedProperty(Property):
+
+    __slots__ = '_id', '_count_property', '_enum', '_readable', '_writeable'
+
+    def __init__(self, id, count_property, enum=None, *, readable: bool = True, writeable: bool = True):
+        self._id = id
+        self._count_property = count_property
+        self._enum = enum
+        self._readable = readable
+        self._writeable = writeable
+
+    @property
+    def count_property(self):
+        return self._count_property
+
+    def get(self, bag: PropertyBag):
+        return IndexedPropertyItems(bag, self)
+
+
+class IndexedBoolProperty(IndexedProperty):
+
+    __slots__ = ()
+
+    def get_index(self, bag: PropertyBag, index: int):
+        value = bag.get_indexed_bool_property(self._id, index)
+        if self._enum:
+            return self._enum(value)
+        return value
+
+
+class IndexedIntProperty(IndexedProperty):
+
+    __slots__ = ()
+
+    def get_index(self, bag: PropertyBag, index: int):
+        value = bag.get_indexed_int_property(self._id, index)
+        if self._enum:
+            return self._enum(value)
+        return value
+
+
+class IndexedUnsignedIntProperty(IndexedProperty):
+
+    __slots__ = ()
+
+    def get_index(self, bag: PropertyBag, index: int):
+        value = bag.get_indexed_unsigned_int_property(self._id, index)
+        if self._enum:
+            return self._enum(value)
+        return value
+
+
+class IndexedDoubleProperty(IndexedProperty):
+
+    __slots__ = ()
+
+    def get_index(self, bag: PropertyBag, index: int):
+        return bag.get_indexed_double_property(self._id, index)
+
+
+class IndexedStringProperty(IndexedProperty):
+
+    __slots__ = ()
+
+    def get_index(self, bag: PropertyBag, index: int):
+        return bag.get_indexed_string_property(self._id, index)
+
+
+class IndexedTimestampProperty(IndexedProperty):
+
+    __slots__ = ()
+
+    def get_index(self, bag: PropertyBag, index: int):
         raise NotImplementedError
 
 
