@@ -53,3 +53,16 @@ class DongleState(BaseEnum):
 class EnetLinkSpeed(BaseEnum):
     LINK_DOWN = 0
     HUNDRED_MEGABIT = 1
+    GIGABIT = 2
+
+
+class EnetJumboFrames(BaseEnum):
+    DISABLE = 0
+    ENABLE_9018_BYTES = 1
+
+
+class EnetInterruptModeration(BaseEnum):
+    OFF = 0
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
