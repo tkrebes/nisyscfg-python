@@ -1,5 +1,6 @@
 from nisyscfg.properties import (
     BitmaskProperty,
+    BoolProperty,
     IndexedDoubleProperty,
     IndexedStringProperty,
     IndexedUnsignedIntProperty,
@@ -11,8 +12,10 @@ from nisyscfg.pxi.enums import (
     Clock10Sources,
     ExternalClockOutputSources,
     InternalOscillators,
+    PxiHighDensityTrigPortState,
     FanModes,
     CoolingProfiles,
+    CoolingProfileSource,
     PowerSupplyStates,
     InhibitModes,
     CalExtActions,
@@ -35,6 +38,7 @@ class Resource(ResourceGroup):
     # phase offset. For best results, use the same model of chassis. */
     EXTERNAL_CLOCK_OUTPUT_SOURCE = IntProperty(184639488, ExternalClockOutputSources)
     INTERNAL_OSCILLATOR = IntProperty(184643584, InternalOscillators)
+    HIGH_DENSITY_TRIG_PORT_COUNT = IntProperty(200286208)
 
     # Fan control attributes
     FAN_MODE = UnsignedIntProperty(185597952, FanModes)
@@ -43,7 +47,12 @@ class Resource(ResourceGroup):
     FAN_MANUAL_RPM_LOWER_BOUND = UnsignedIntProperty(185634816)
     FAN_MANUAL_RPM_UPPER_BOUND = UnsignedIntProperty(185638912)
     COOLING_PROFILE = UnsignedIntProperty(185610240, CoolingProfiles)
+    COOLING_PROFILE_SOURCE = IntProperty(185663488, CoolingProfileSource)
     SUPPORTED_COOLING_PROFILES = BitmaskProperty(185614336, CoolingProfiles)
+    # Honors a cooling profile user setting that is lower than a module
+    # request when the module can accommodate the request by reducing
+    # performance or functionality. A reboot may be required to take effect. */
+    ENABLE_USER_OVERRIDE_OF_COOLING_PROFILE = BoolProperty(185659392)
 
     # Power supply attributes
     POWER_SUPPLY_BAY_COUNT = IntProperty(186777600)
@@ -64,3 +73,8 @@ class IndexedResource(ResourceGroup):
     POWER_SUPPLY_POWER_READING = IndexedDoubleProperty(186822656, Resource.POWER_SUPPLY_BAY_COUNT)  #: (Watts)
     POWER_SUPPLY_INTAKE_TEMP = IndexedDoubleProperty(186802176, Resource.POWER_SUPPLY_BAY_COUNT)  #: (degrees Celsius)
     POWER_SUPPLY_POWER_LINE_FREQUENCY = IndexedUnsignedIntProperty(186785792, Resource.POWER_SUPPLY_BAY_COUNT)  #: (Hertz)
+
+    # High Density Trigger Port index Attributes
+    TRIG_PORT_NAME = IndexedStringProperty(200290304, Resource.HIGH_DENSITY_TRIG_PORT_COUNT)
+    TRIG_PORT_STATE = IndexedUnsignedIntProperty(200294400, Resource.HIGH_DENSITY_TRIG_PORT_COUNT, PxiHighDensityTrigPortState)
+    TRIG_PORT_REMOVE_DEVICE_ALIAS = IndexedStringProperty(200298496, Resource.HIGH_DENSITY_TRIG_PORT_COUNT)
