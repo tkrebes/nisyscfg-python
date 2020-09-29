@@ -64,6 +64,10 @@ class Library(object):
         self._InstallSoftwareSet_cfunc = None
         self._InstallStartup_cfunc = None
         self._UninstallAll_cfunc = None
+        self._GetSoftwareFeeds_cfunc = None
+        self._AddSoftwareFeed_cfunc = None
+        self._ModifySoftwareFeed_cfunc = None
+        self._RemoveSoftwareFeed_cfunc = None
         self._ChangeAdministratorPassword_cfunc = None
         self._ExportConfiguration_cfunc = None
         self._ImportConfiguration_cfunc = None
@@ -78,6 +82,7 @@ class Library(object):
         self._NextSoftwareSet_cfunc = None
         self._GetSoftwareSetInfo_cfunc = None
         self._NextDependencyInfo_cfunc = None
+        self._NextSoftwareFeed_cfunc = None
         self._ResetEnumeratorGetCount_cfunc = None
         self._GetStatusDescription_cfunc = None
         self._TimestampFromValues_cfunc = None
@@ -489,6 +494,38 @@ class Library(object):
                 self._UninstallAll_cfunc.restype = Status  # noqa: F405
         return self._UninstallAll_cfunc(sessionHandle, autoRestart)
 
+    def GetSoftwareFeeds(self, sessionHandle, feedEnumHandle):  # noqa: N802,N803
+        with self._func_lock:
+            if self._GetSoftwareFeeds_cfunc is None:
+                self._GetSoftwareFeeds_cfunc = self._library.windll.NISysCfgGetSoftwareFeeds
+                self._GetSoftwareFeeds_cfunc.argtypes = [SessionHandle, EnumSoftwareFeedHandle]  # noqa: F405
+                self._GetSoftwareFeeds_cfunc.restype = Status  # noqa: F405
+        return self._GetSoftwareFeeds_cfunc(sessionHandle, feedEnumHandle)
+
+    def AddSoftwareFeed(self, sessionHandle, feedName, uri, enabled, trusted):  # noqa: N802,N803
+        with self._func_lock:
+            if self._AddSoftwareFeed_cfunc is None:
+                self._AddSoftwareFeed_cfunc = self._library.windll.NISysCfgAddSoftwareFeed
+                self._AddSoftwareFeed_cfunc.argtypes = [SessionHandle, ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), Bool, Bool]  # noqa: F405
+                self._AddSoftwareFeed_cfunc.restype = Status  # noqa: F405
+        return self._AddSoftwareFeed_cfunc(sessionHandle, feedName, uri, enabled, trusted)
+
+    def ModifySoftwareFeed(self, sessionHandle, feedName, newFeedName, uri, enabled, trusted):  # noqa: N802,N803
+        with self._func_lock:
+            if self._ModifySoftwareFeed_cfunc is None:
+                self._ModifySoftwareFeed_cfunc = self._library.windll.NISysCfgModifySoftwareFeed
+                self._ModifySoftwareFeed_cfunc.argtypes = [SessionHandle, ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), Bool, Bool]  # noqa: F405
+                self._ModifySoftwareFeed_cfunc.restype = Status  # noqa: F405
+        return self._ModifySoftwareFeed_cfunc(sessionHandle, feedName, newFeedName, uri, enabled, trusted)
+
+    def RemoveSoftwareFeed(self, sessionHandle, feedName):  # noqa: N802,N803
+        with self._func_lock:
+            if self._RemoveSoftwareFeed_cfunc is None:
+                self._RemoveSoftwareFeed_cfunc = self._library.windll.NISysCfgRemoveSoftwareFeed
+                self._RemoveSoftwareFeed_cfunc.argtypes = [SessionHandle, ctypes.POINTER(ctypes.c_char)]  # noqa: F405
+                self._RemoveSoftwareFeed_cfunc.restype = Status  # noqa: F405
+        return self._RemoveSoftwareFeed_cfunc(sessionHandle, feedName)
+
     def ChangeAdministratorPassword(self, sessionHandle, newPassword):  # noqa: N802,N803
         with self._func_lock:
             if self._ChangeAdministratorPassword_cfunc is None:
@@ -600,6 +637,14 @@ class Library(object):
                 self._NextDependencyInfo_cfunc.argtypes = [EnumDependencyHandle, ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.POINTER(ctypes.c_char)), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.POINTER(ctypes.c_char))]  # noqa: F405
                 self._NextDependencyInfo_cfunc.restype = Status  # noqa: F405
         return self._NextDependencyInfo_cfunc(dependencyEnumHandle, dependerID, dependerVersion, dependerTitle, dependerDetailedDescription, dependeeID, dependeeVersion, dependeeTitle, dependeeDetailedDescription)
+
+    def NextSoftwareFeed(self, feedEnumHandle, feedName, uri, enabled, trusted):  # noqa: N802,N803
+        with self._func_lock:
+            if self._NextSoftwareFeed_cfunc is None:
+                self._NextSoftwareFeed_cfunc = self._library.windll.NISysCfgNextSoftwareFeed
+                self._NextSoftwareFeed_cfunc.argtypes = [EnumSoftwareFeedHandle, ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_char), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]  # noqa: F405
+                self._NextSoftwareFeed_cfunc.restype = Status  # noqa: F405
+        return self._NextSoftwareFeed_cfunc(feedEnumHandle, feedName, uri, enabled, trusted)
 
     def ResetEnumeratorGetCount(self, enumHandle, count):  # noqa: N802,N803
         with self._func_lock:
