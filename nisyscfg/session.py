@@ -10,6 +10,8 @@ import nisyscfg.xnet.properties
 from nisyscfg._lib import c_string_decode
 from nisyscfg._lib import c_string_encode
 
+from typing import Union
+
 
 class _NoDefault(object):
     pass
@@ -279,6 +281,130 @@ class Session(object):
         error_code = self._library.Restart(self._session, sync_call, install_mode, flush_dns, timeout, new_ip_address)
         nisyscfg.errors.handle_error(self, error_code)
         return c_string_decode(new_ip_address.value)
+
+    def get_filtered_base_system_images(
+        self,
+        repository_path: Union[None, str] = None,
+        device_class: Union[None, str] = None,
+        os: Union[None, str] = None,
+        product_id: int = 0
+    ):
+        """
+        Retrieves a collection of base system images available from a
+        repository path.
+
+        These include a base operating system and are intended to be used
+        with format().
+
+        repository_path - Specifies the location that contains installable
+        components.
+
+        device_class - Specifies the type of device for which you are
+        searching. Common values are PXI and cRIO. To specify multiple classes,
+        use a comma to separate the values.
+
+        os - Specifies the operating system.
+
+        product_id - Specifies the bus-specific product identifier code. This
+        is not the product's sellable model number.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        software_component_handle = nisyscfg.types.EnumSoftwareComponentHandle()
+        error_code = self._library.GetFilteredBaseSystemImages(
+            c_string_encode(repository_path),
+            c_string_encode(device_class),
+            c_string_encode(os),
+            ctypes.c_uint(product_id),
+            ctypes.pointer(software_component_handle))
+        nisyscfg.errors.handle_error(self, error_code)
+        if software_component_handle:
+            iter = ComponentInfoIterator(software_component_handle, self._library)
+            self._children.append(iter)
+            return iter
+
+    def format(
+        self,
+        auto_restart: bool = True,
+        file_system: nisyscfg.enums.FileSystemMode = nisyscfg.enums.FileSystemMode.DEFAULT,
+        network_settings: nisyscfg.enums.NetworkInterfaceSettings = nisyscfg.enums.NetworkInterfaceSettings.RESET_PRIMARY_RESET_OTHERS,
+        system_image_id: Union[None, str] = None,
+        system_image_version: Union[None, str] = None,
+        timeout: float = 90.0
+    ) -> None:
+        """
+        Erases all data from the primary hard drive of a system and formats it
+        with the base system image, network settings, and filesystem specified.
+        The operation will fail if you choose not to restart the target
+        automatically and the target's boot flow requires it to be in safe mode
+        or restart after the operation. Refer to the the definition of safe
+        mode to understand the differences between safe mode for different
+        target boot flows. This function can only be used to format Real-Time
+        systems.
+
+        auto_restart - Restarts the system before and/or after the operation as
+        required by the target's boot flow. The operation will fail if you
+        choose not to restart the target automatically and the target's boot
+        flow requires it to be in safe mode or restart after the operation.
+
+        file_system - Formats the primary hard drive into a user-selected file
+        system. Not all systems support all modes.
+        ========= ==============================================================
+        Mode      Description
+        --------- --------------------------------------------------------------
+        DEFAULT   Formats the hard drive into the default format. The default
+                  is whatever format the existing target is already in.
+        FAT       Formats the hard drive with the File Allocation Table (FAT)
+                  file system.
+        RELIANCE  Formats the hard drive with the Reliance file system. Reliance
+                  is a transactional file system, developed by Datalight, that
+                  is tolerant to crashes and power interruptions.
+        UBIFS     Formats the hard drive with the Unsorted Block Image File
+                  System (UBIFS).
+        EXT4      Formats the hard drive with the Ext4 file system.
+        ========= ==============================================================
+
+        network_settings - Resets the primary network adapter and disables
+        secondary adapters by default.
+        ================================ =======================================
+        Mode                             Description
+        -------------------------------- ---------------------------------------
+        RESET_PRIMARY_RESET_OTHERS       Resets the primary network adapter to
+                                         factory settings and disables all other
+                                         network adapters.
+        PRESERVE_PRIMARY_RESET_OTHERS    Preserves the existing settings on the
+                                         primary network adapter and disables
+                                         all other network adapters. This option
+                                         may not be supported for targets on a
+                                         remote subnet.
+        PRESERVE_PRIMARY_PRESERVE_OTHERS Preserves the settings for all network
+                                         adapters. This option may not be
+                                         supported for targets on a remote
+                                         subnet.
+        ================================ =======================================
+
+        system_image_id - The system image ID.
+
+        system_image_version - The system image version.
+
+        timeout - The time, in seconds, that the function waits for the format
+        to time out. The default is 90 s. If restart after format is TRUE, the
+        default increases by 90 s. If the system is not in safe mode, the
+        default increases by another 90 s.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        error_code = self._library.FormatWithBaseSystemImage(
+            self._session,
+            nisyscfg.enums.Bool(auto_restart),
+            file_system,
+            network_settings,
+            c_string_encode(system_image_id),
+            c_string_encode(system_image_version),
+            ctypes.c_uint(int(timeout * 1000)))
+        nisyscfg.errors.handle_error(self, error_code)
 
     def get_available_software_components(self, item_types=nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE):
         """
@@ -1058,16 +1184,25 @@ class ComponentInfoIterator(object):
         version = nisyscfg.types.simple_string()
         title = nisyscfg.types.simple_string()
         item_type = nisyscfg.types.ctypes.c_long()
-        error_code = self._library.NextComponentInfo(self._handle, id, version, title, ctypes.pointer(item_type), None)
+        c_details = ctypes.POINTER(ctypes.c_char)()
+        error_code = self._library.NextComponentInfo(self._handle, id, version, title, ctypes.pointer(item_type), c_details)
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
+
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code = self._library.FreeDetailedString(c_details)
+            nisyscfg.errors.handle_error(self, error_code)
+        else:
+            details = None
+
         return ComponentInfo(
             id=c_string_decode(id.value),
             version=c_string_decode(version.value),
             title=c_string_decode(title.value),
             type=nisyscfg.enums.ComponentType(item_type.value),
-            details=None,  # TODO(tkrebes): Implement
+            details=details,
         )
 
     def close(self):
