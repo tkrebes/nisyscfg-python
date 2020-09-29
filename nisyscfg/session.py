@@ -938,6 +938,11 @@ class HardwareResource(object):
         return ReturnData(dependent_items_deleted.value != 0, detailed_result)
 
 
+ComponentInfo = collections.namedtuple(
+    'ComponentInfo', ['id', 'version', 'title', 'type', 'details']
+)
+
+
 class ComponentInfoIterator(object):
     def __init__(self, handle, library):
         self._handle = handle
@@ -958,13 +963,13 @@ class ComponentInfoIterator(object):
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
-        return {
-            'id': c_string_decode(id.value),
-            'version': c_string_decode(version.value),
-            'title': c_string_decode(title.value),
-            'type': nisyscfg.types.ComponentType(item_type.value),
-            'details': None,  # TODO(tkrebes): Implement
-        }
+        return ComponentInfo(
+            id=c_string_decode(id.value),
+            version=c_string_decode(version.value),
+            title=c_string_decode(title.value),
+            type=nisyscfg.enums.ComponentType(item_type.value),
+            details=None,  # TODO(tkrebes): Implement
+        )
 
     def close(self):
         if self._handle:
