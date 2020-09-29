@@ -349,11 +349,93 @@ class Session(object):
             self._children.append(iter)
             return iter
 
+    def add_software_feed(self, name: str, uri: str, enabled: bool, trusted: bool):
+        """
+        Adds a software feed to the system.
+
+        Note: This requires Secure Shell Server (sshd) to be enabled on the
+        target.
+
+        name - Name of the feed for identification purposes.
+
+        uri - Location of the feed, such as "file://..." or "http://...". NI
+        feeds often start with "http://download.ni.com/".
+
+        enabled - Whether the feed is enabled.
+
+        trusted - Whether the feed is trusted. A trusted feed will not be
+        cryptographically verified by the package manager to be a safe and
+        secure source of packages. Feeds are not trusted by default. A system
+        administrator may have reason to trust the feed regardless.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        error_code = self._library.AddSoftwareFeed(
+            self._session,
+            c_string_encode(name),
+            c_string_encode(uri),
+            nisyscfg.enums.Bool(enabled),
+            nisyscfg.enums.Bool(trusted))
+        nisyscfg.errors.handle_error(self, error_code)
+
+    def modify_software_feed(self, old_name: str, new_name: str, uri: str, enabled: bool, trusted: bool):
+        """
+        Modifies an existing software feed by name.
+
+        Note: This requires Secure Shell Server (sshd) to be enabled on the
+        target.
+
+        old_name - Name of the feed to modify. This feed must exist on the system.
+
+        new_name - New name of the feed. This feed must not exist on the
+        system. If not specified, the feed name will remain unchanged.
+
+        uri - New location of the feed, such as "file://..." or "http://...".
+        NI feeds often start with "http://download.ni.com/".
+
+        enabled - New enabled state.
+
+        trusted - New trusted state. A trusted feed will not be
+        cryptographically verified by the package manager to be a safe and
+        secure source of packages. Feeds are not trusted by default. A system
+        administrator may have reason to trust the feed regardless.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        error_code = self._library.ModifySoftwareFeed(
+            self._session,
+            c_string_encode(old_name),
+            c_string_encode(new_name),
+            c_string_encode(uri),
+            nisyscfg.enums.Bool(enabled),
+            nisyscfg.enums.Bool(trusted))
+        nisyscfg.errors.handle_error(self, error_code)
+
+    def remove_software_feed(self, name: str):
+        """
+        Removes an existing software feed by name.
+
+        Note: This requires Secure Shell Server (sshd) to be enabled on the
+        target.
+
+        name - Name of the feed to remove. This feed must exist on the system.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        error_code = self._library.RemoveSoftwareFeed(self._session, c_string_encode(name))
+        nisyscfg.errors.handle_error(self, error_code)
+
     def get_software_feeds(self):
         """
         Retrieves a list of configured software feeds. A feed represents a
         location that the package manager uses to find and download available
         software.
+
+        Note: This requires Secure Shell Server (sshd) to be enabled on the
+        target.
 
         Raises an nisyscfg.errors.LibraryError exception in the event of an
         error.
