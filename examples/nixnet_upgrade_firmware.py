@@ -10,8 +10,8 @@ def nixnet_upgrade_firmware(serial_number):
     with nisyscfg.Session() as session:
         # Search for the NI-XNET device with the specified serial number.
         device_filter = session.create_filter()
-        device_filter[nisyscfg.FilterProperties.IS_DEVICE] = True
-        device_filter[nisyscfg.FilterProperties.SERIAL_NUMBER] = serial_number
+        device_filter.is_device = True
+        device_filter.serial_number = serial_number
 
         try:
             # Assume only one device will be found

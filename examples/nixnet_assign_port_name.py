@@ -15,8 +15,8 @@ def nixnet_assign_port_name(serial_number, port_number, port_name):
     with nisyscfg.Session() as session:
         # Search for the NI-XNET device with the specified serial number.
         device_filter = session.create_filter()
-        device_filter[nisyscfg.FilterProperties.IS_DEVICE] = True
-        device_filter[nisyscfg.FilterProperties.SERIAL_NUMBER] = serial_number
+        device_filter.is_device = True
+        device_filter.serial_number = serial_number
 
         try:
             # Assume only one device will be found
@@ -27,11 +27,9 @@ def nixnet_assign_port_name(serial_number, port_number, port_name):
         # Search for the interface connected to the NI-XNET device with the
         # specified port number.
         interface_filter = session.create_filter()
-        interface_filter[nisyscfg.FilterProperties.IS_DEVICE] = False
-        interface_filter[nisyscfg.FilterProperties.CONNECTS_TO_LINK_NAME] = (
-            device[nisyscfg.ResourceProperties.PROVIDES_LINK_NAME]
-        )
-        interface_filter[nisyscfg.xnet.FilterProperties.PORT_NUMBER] = port_number
+        interface_filter.is_device = False
+        interface_filter.connects_to_link_name = device.provides_link_name
+        interface_filter.xnet.port_number = port_number
 
         try:
             # Assume only one interface will be found

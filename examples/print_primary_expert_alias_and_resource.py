@@ -6,14 +6,14 @@ def print_primary_expert_alias_and_resource():
     with nisyscfg.Session() as session:
         print(format_string.format('Expert', 'Alias', 'Resource'))
         filter = session.create_filter()
-        filter[nisyscfg.FilterProperties.IS_PRESENT] = True
-        filter[nisyscfg.FilterProperties.IS_NI_PRODUCT] = True
+        filter.is_present = True
+        filter.is_ni_product = True
         for resource in session.find_hardware(filter):
             # The first user alias in the list is from the primary expert
             print(format_string.format(
-                resource[nisyscfg.IndexedResourceProperties.EXPERT_NAME][0],
-                resource[nisyscfg.IndexedResourceProperties.EXPERT_USER_ALIAS][0],
-                resource[nisyscfg.IndexedResourceProperties.EXPERT_RESOURCE_NAME][0]))
+                resource.expert_name[0],
+                resource.expert_user_alias[0],
+                resource.expert_resource_name[0]))
 
 
 if __name__ == '__main__':

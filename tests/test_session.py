@@ -20,6 +20,7 @@ EXPERT_ENUM_HANDLE = 2
 RESOURCE_ENUM_HANDLE = 3
 FILTER_HANDLE = 4
 SOFTWARE_COMPONENT_HANDLE = 5
+RESOURCE_HANDLE = 6
 
 
 STATUS_DESCRIPTION = ctypes.c_char_p(b'description')
@@ -119,6 +120,12 @@ def get_installed_software_components_mock(session_handle, item_types, cached, s
     return nisyscfg.errors.Status.OK
 
 
+def get_system_property_mock(session_handle, id, value):
+    if id == 16941086:
+        value.contents.value = RESOURCE_HANDLE
+    return nisyscfg.errors.Status.OK
+
+
 @pytest.fixture(scope='function')
 def lib_mock():
     with mock.patch('platform.system') as platform_system_mock:
@@ -144,6 +151,7 @@ def lib_mock():
                 lib.NISysCfgGetAvailableSoftwareComponents.side_effect = get_available_software_components_mock
                 lib.NISysCfgGetInstalledSoftwareComponents.side_effect = get_installed_software_components_mock
                 lib.NISysCfgNextComponentInfo.return_value = nisyscfg.errors.Status.END_OF_ENUM
+                lib.NISysCfgGetSystemProperty.side_effect = get_system_property_mock
                 yield ctypes_mock
     nisyscfg._library_singleton._instance = None
 
@@ -321,7 +329,7 @@ def test_find_hardware_with_default_arguments(lib_mock):
 def test_find_hardware_with_filter_properties_specified(lib_mock):
     with nisyscfg.Session() as session:
         filter = session.create_filter()
-        filter[nisyscfg.FilterProperties.EXPERT_NAME] = 'my_expert'
+        filter.expert_name = 'my_expert'
         session.find_hardware(filter)
     expected_calls = [
         mock.call(mock.ANY),
@@ -366,7 +374,7 @@ def test_find_hardware_with_list_of_expert_names(lib_mock):
 def test_find_hardware_with_passed_filter_properties_specified(lib_mock, property_name, property_type, assigned_value, expected_value):
     with nisyscfg.Session() as session:
         filter = session.create_filter()
-        filter[getattr(nisyscfg.FilterProperties, property_name)] = assigned_value
+        setattr(filter, property_name.lower(), assigned_value)
         session.find_hardware(filter)
         property_id = getattr(nisyscfg.FilterProperties, property_name)._id
     expected_calls = [
@@ -398,7 +406,7 @@ def test_create_filter(lib_mock):
 def test_create_filter_and_set_syscfg_filter_property(lib_mock):
     with nisyscfg.Session() as session:
         filter = session.create_filter()
-        filter[nisyscfg.FilterProperties.EXPERT_NAME] = 'my_expert'
+        filter.expert_name = 'my_expert'
     expected_calls = [
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
@@ -506,7 +514,7 @@ def test_hardware_resource_raises_error_after_close(lib_mock):
 def test_get_hardware_resource_property(lib_mock, config_next_resource_side_effect_mock, config_get_resource_property_mock, property_name, expected_value):
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
-        assert expected_value == resource[getattr(nisyscfg.ResourceProperties, property_name)]
+        assert expected_value == getattr(resource, property_name.lower())
         property_id = getattr(nisyscfg.ResourceProperties, property_name)._id
 
     expected_calls = [
@@ -537,7 +545,7 @@ def test_get_hardware_resource_property_raises_library_error_when_error_code_is_
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
         with pytest.raises(nisyscfg.errors.LibraryError):
-            resource[nisyscfg.ResourceProperties.IS_DEVICE]
+            resource.is_device
 
 
 @pytest.mark.parametrize(
@@ -578,7 +586,7 @@ def test_get_hardware_index_property(lib_mock, property_name, count_property, ex
 
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
-        property = resource[getattr(nisyscfg.IndexedResourceProperties, property_name)]
+        property = getattr(resource, property_name.lower())
         assert expected_values == list(property)
         count_property_id = getattr(nisyscfg.ResourceProperties, count_property)._id
         property_id = getattr(nisyscfg.IndexedResourceProperties, property_name)._id
@@ -600,3 +608,45 @@ def test_get_hardware_index_property(lib_mock, property_name, count_property, ex
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
     ]
     assert lib_mock.mock_calls == expected_calls
+
+
+def test_sesssion_has_resource(lib_mock):
+    with nisyscfg.Session() as session:
+        assert 'resource' in dir(session)
+
+
+def test_sesssion_resource_has_pxi(lib_mock):
+    with nisyscfg.Session() as session:
+        assert 'pxi' in dir(session.resource)
+
+
+def test_sesssion_resource_pxi_has_fan_mode(lib_mock):
+    with nisyscfg.Session() as session:
+        assert 'fan_mode' in dir(session.resource.pxi)
+
+
+def test_sesssion_resource_pxi_has_power_supply_name(lib_mock):
+    with nisyscfg.Session() as session:
+        assert 'power_supply_name' in dir(session.resource.pxi)
+
+
+def test_sesssion_resource_has_xnet(lib_mock):
+    with nisyscfg.Session() as session:
+        assert 'xnet' in dir(session.resource)
+
+
+def test_sesssion_resource_xnet_has_protocol(lib_mock):
+    with nisyscfg.Session() as session:
+        assert 'protocol' in dir(session.resource.xnet)
+
+
+def test_filter_has_xnet(lib_mock):
+    with nisyscfg.Session() as session:
+        filter = session.create_filter()
+        assert 'xnet' in dir(filter)
+
+
+def test_filter_xnet_has_protocol(lib_mock):
+    with nisyscfg.Session() as session:
+        filter = session.create_filter()
+        assert 'protocol' in dir(filter.xnet)

@@ -3,6 +3,9 @@ import ctypes
 
 import nisyscfg
 import nisyscfg._library_singleton
+import nisyscfg.properties
+import nisyscfg.pxi.properties
+import nisyscfg.xnet.properties
 
 from nisyscfg._lib import c_string_decode
 from nisyscfg._lib import c_string_encode
@@ -12,6 +15,59 @@ class _NoDefault(object):
     pass
 
 
+class _Property(object):
+
+    __slots__ = ('_property', )
+
+    def __init__(self, property):
+        self._property = property
+
+    def __get__(self, instance, cls):
+        return self._property.get(instance._property_bag)
+
+    def __set__(self, instance, value):
+        return self._property.set(instance._property_bag, value)
+
+    def __delete__(self, instance):
+        raise NotImplementedError
+
+
+class _Expert(object):
+
+    def __init__(self, *property_groups):
+        class _ExpertPropertyBag(object):
+            def __init__(self, property_bag):
+                self._property_bag = property_bag
+        self._expert = _PropertyBag(*property_groups)(_ExpertPropertyBag)
+
+    def __get__(self, instance, cls):
+        return self._expert(instance._property_bag)
+
+    def __set__(self, instance, value):
+        raise NotImplementedError
+
+    def __delete__(self, instance):
+        raise NotImplementedError
+
+
+class _PropertyBag(object):
+
+    def __init__(self, *property_groups, expert=None):
+        self._property_groups = property_groups
+        self._expert = expert
+
+    def __call__(self, session):
+        if self._expert:
+            setattr(session, self._expert, _Expert(*self._property_groups))
+        else:
+            for group in self._property_groups:
+                for prop in dir(group):
+                    if not prop.startswith('_'):
+                        setattr(session, prop.lower(), _Property(getattr(group, prop)))
+        return session
+
+
+@_PropertyBag(nisyscfg.properties.System)
 class Session(object):
     """
     Initializes a system configuration session with a specific system.
@@ -321,12 +377,6 @@ class Session(object):
 
         return c_string_decode(value.value)
 
-    def __getitem__(self, tag):
-        if isinstance(tag.group, nisyscfg.properties.SystemGroup):
-            return tag.get(self._property_bag)
-        else:
-            return self.resource[tag]
-
     def get_property(self, tag, default=_NoDefault()):
         """
         Returns value of system property
@@ -352,12 +402,6 @@ class Session(object):
 
         error_code = self._library.SetSystemProperty(self._session, id, value)
         nisyscfg.errors.handle_error(self, error_code)
-
-    def __setitem__(self, tag, value):
-        if isinstance(tag.group, nisyscfg.properties.SystemGroup):
-            tag.set(self._property_bag, value)
-        else:
-            self.resource[tag] = value
 
     def save_changes(self):
         """
@@ -423,6 +467,8 @@ class ExpertInfoIterator(object):
         return self.__next__()
 
 
+@_PropertyBag(nisyscfg.properties.Filter)
+@_PropertyBag(nisyscfg.xnet.properties.Filter, expert='xnet')
 class Filter(object):
     def __init__(self, session, library):
         self._handle = nisyscfg.types.FilterHandle()
@@ -450,9 +496,6 @@ class Filter(object):
 
         error_code = self._library.SetFilterPropertyWithType(self._handle, id, nisyscfg_type, value)
         nisyscfg.errors.handle_error(self, error_code)
-
-    def __setitem__(self, tag, value):
-        tag.set(self._property_bag, value)
 
 
 class HardwareResourceIterator(object):
@@ -494,6 +537,9 @@ class HardwareResourceIterator(object):
         return self.__next__()
 
 
+@_PropertyBag(nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource)
+@_PropertyBag(nisyscfg.pxi.properties.Resource, nisyscfg.pxi.properties.IndexedResource, expert='pxi')
+@_PropertyBag(nisyscfg.xnet.properties.Resource, expert='xnet')
 class HardwareResource(object):
     def __init__(self, handle, library):
         self._handle = handle
@@ -571,9 +617,6 @@ class HardwareResource(object):
 
         return c_string_decode(value.value)
 
-    def __getitem__(self, tag):
-        return tag.get(self._property_bag)
-
     def get_property(self, tag, default=_NoDefault()):
         """
         Returns value of hardware resource property
@@ -599,9 +642,6 @@ class HardwareResource(object):
 
         error_code = self._library.SetResourceProperty(self._handle, id, value)
         nisyscfg.errors.handle_error(self, error_code)
-
-    def __setitem__(self, tag, value):
-        tag.set(self._property_bag, value)
 
     def rename(self, new_name, overwrite_conflict=False, update_dependencies=False):
         """

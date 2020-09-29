@@ -11,8 +11,8 @@ def nixnet_blink_port_led(port_name, mode):
     with nisyscfg.Session() as session:
         # Search for the NI-XNET interface with port name.
         interface_filter = session.create_filter()
-        interface_filter[nisyscfg.FilterProperties.IS_DEVICE] = False
-        interface_filter[nisyscfg.FilterProperties.USER_ALIAS] = port_name
+        interface_filter.is_device = False
+        interface_filter.user_alias = port_name
 
         try:
             # Assume only one interface will be found
@@ -21,7 +21,7 @@ def nixnet_blink_port_led(port_name, mode):
             raise PortNotFoundError('Could not find a port "{}"'.format(port_name))
 
         # Set blink property and apply changes.
-        interface[nisyscfg.xnet.ResourceProperties.BLINK] = mode
+        interface.xnet.blink = mode
         interface.save_changes()
 
 
