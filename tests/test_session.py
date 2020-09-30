@@ -287,12 +287,12 @@ def test_get_system_experts_with_two_experts(lib_mock):
     ]
     assert lib_mock.mock_calls == expected_calls
     assert len(expert_info) == 2
-    assert expert_info[0]['expert_name'] == 'sync'
-    assert expert_info[0]['display_name'] == 'NI-Sync'
-    assert expert_info[0]['version'] == '1.2.0'
-    assert expert_info[1]['expert_name'] == 'xnet'
-    assert expert_info[1]['display_name'] == 'NI-XNET'
-    assert expert_info[1]['version'] == '10.0'
+    assert expert_info[0].expert_name == 'sync'
+    assert expert_info[0].display_name == 'NI-Sync'
+    assert expert_info[0].version == '1.2.0'
+    assert expert_info[1].expert_name == 'xnet'
+    assert expert_info[1].display_name == 'NI-XNET'
+    assert expert_info[1].version == '10.0'
 
 
 def test_get_system_experts_with_csv_expert_names(lib_mock):

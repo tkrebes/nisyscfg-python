@@ -1,6 +1,12 @@
+import collections
 import nisyscfg.errors
 
 from nisyscfg._lib import c_string_decode
+
+
+ExpertInfo = collections.namedtuple(
+    'ExpertInfo', ['expert_name', 'display_name', 'version']
+)
 
 
 class ExpertInfoIterator(object):
@@ -14,7 +20,7 @@ class ExpertInfoIterator(object):
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> ExpertInfo:
         if not self._handle:
             # TODO(tkrebes): raise RuntimeError
             raise StopIteration()
@@ -25,13 +31,13 @@ class ExpertInfoIterator(object):
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
-        return {
-            'expert_name': c_string_decode(expert_name.value),
-            'display_name': c_string_decode(display_name.value),
-            'version': c_string_decode(version.value),
-        }
+        return ExpertInfo(
+            c_string_decode(expert_name.value),
+            c_string_decode(display_name.value),
+            c_string_decode(version.value)
+        )
 
-    def close(self):
+    def close(self) -> None:
         if self._handle:
             error_code = self._library.CloseHandle(self._handle)
             nisyscfg.errors.handle_error(self, error_code)
