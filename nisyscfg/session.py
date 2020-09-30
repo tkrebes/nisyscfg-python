@@ -3,6 +3,7 @@ import ctypes
 
 import nisyscfg
 import nisyscfg._library_singleton
+import nisyscfg.component_info
 import nisyscfg.expert_info
 import nisyscfg.filter
 import nisyscfg.hardware_resource
@@ -244,7 +245,7 @@ class Session(object):
         device_class: Union[None, str] = None,
         os: Union[None, str] = None,
         product_id: int = 0
-    ):
+    ) -> nisyscfg.component_info.ComponentInfoIterator:
         """
         Retrieves a collection of base system images available from a
         repository path.
@@ -276,7 +277,7 @@ class Session(object):
             ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoIterator(software_component_handle)
+            iter = nisyscfg.component_info.ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
@@ -362,7 +363,10 @@ class Session(object):
             ctypes.c_uint(int(timeout * 1000)))
         nisyscfg.errors.handle_error(self, error_code)
 
-    def get_available_software_components(self, item_types=nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE):
+    def get_available_software_components(
+        self,
+        item_types: nisyscfg.enums.IncludeComponentTypes = nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE
+    ) -> nisyscfg.component_info.ComponentInfoIterator:
         """
         Retrieves a list of software components on the local system that are
         available for installation to the specified target.
@@ -391,11 +395,15 @@ class Session(object):
         error_code = self._library.GetAvailableSoftwareComponents(self._session, item_types, ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoIterator(software_component_handle)
+            iter = nisyscfg.component_info.ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
-    def get_installed_software_components(self, item_types=nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE, cached=False):
+    def get_installed_software_components(
+        self,
+        item_types: nisyscfg.enums.IncludeComponentTypes = nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE,
+        cached: bool = False
+    ) -> nisyscfg.component_info.ComponentInfoIterator:
         """
         Retrieves a list of software components installed on a system.
 
@@ -427,7 +435,7 @@ class Session(object):
         error_code = self._library.GetInstalledSoftwareComponents(self._session, item_types, cached, ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoIterator(software_component_handle)
+            iter = nisyscfg.component_info.ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
@@ -608,55 +616,6 @@ class Session(object):
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
         return restart_required.value != 0, detailed_description
-
-
-ComponentInfo = collections.namedtuple(
-    'ComponentInfo', ['id', 'version', 'title', 'type', 'details']
-)
-
-
-class ComponentInfoIterator(object):
-    def __init__(self, handle):
-        self._handle = handle
-        self._library = nisyscfg._library_singleton.get()
-
-    def __del__(self):
-        self.close()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        id = nisyscfg.types.simple_string()
-        version = nisyscfg.types.simple_string()
-        title = nisyscfg.types.simple_string()
-        item_type = nisyscfg.types.ctypes.c_long()
-        c_details = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.NextComponentInfo(self._handle, id, version, title, ctypes.pointer(item_type), c_details)
-        if error_code == 1:
-            raise StopIteration()
-        nisyscfg.errors.handle_error(self, error_code)
-
-        if c_details:
-            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
-            error_code = self._library.FreeDetailedString(c_details)
-            nisyscfg.errors.handle_error(self, error_code)
-        else:
-            details = None
-
-        return ComponentInfo(
-            id=c_string_decode(id.value),
-            version=c_string_decode(version.value),
-            title=c_string_decode(title.value),
-            type=nisyscfg.enums.ComponentType(item_type.value),
-            details=details,
-        )
-
-    def close(self):
-        if self._handle:
-            error_code = self._library.CloseHandle(self._handle)
-            nisyscfg.errors.handle_error(self, error_code)
-            self._handle = None
 
 
 SoftwareFeed = collections.namedtuple(
