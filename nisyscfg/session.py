@@ -190,7 +190,7 @@ class Session(object):
             expert_names = ','.join(expert_names)
         error_code = self._library.GetSystemExperts(self._session, c_string_encode(expert_names), ctypes.pointer(expert_handle))
         nisyscfg.errors.handle_error(self, error_code)
-        iter = ExpertInfoIterator(expert_handle, self._library)
+        iter = ExpertInfoIterator(expert_handle)
         self._children.append(iter)
         return iter
 
@@ -232,7 +232,7 @@ class Session(object):
             expert_names = ','.join(expert_names)
         error_code = self._library.FindHardware(self._session, mode, filter._handle, c_string_encode(expert_names), ctypes.pointer(resource_handle))
         nisyscfg.errors.handle_error(self, error_code)
-        iter = HardwareResourceIterator(self._session, resource_handle, self._library)
+        iter = HardwareResourceIterator(self._session, resource_handle)
         self._children.append(iter)
         return iter
 
@@ -245,7 +245,7 @@ class Session(object):
         Raises an nisyscfg.errors.LibraryError exception in the event of an
         error.
         """
-        filter = Filter(self._session, self._library)
+        filter = Filter(self._session)
         self._children.append(filter)
         return filter
 
@@ -320,7 +320,7 @@ class Session(object):
             ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoIterator(software_component_handle, self._library)
+            iter = ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
@@ -435,7 +435,7 @@ class Session(object):
         error_code = self._library.GetAvailableSoftwareComponents(self._session, item_types, ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoIterator(software_component_handle, self._library)
+            iter = ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
@@ -471,7 +471,7 @@ class Session(object):
         error_code = self._library.GetInstalledSoftwareComponents(self._session, item_types, cached, ctypes.pointer(software_component_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = ComponentInfoIterator(software_component_handle, self._library)
+            iter = ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
@@ -570,7 +570,7 @@ class Session(object):
         error_code = self._library.GetSoftwareFeeds(self._session, ctypes.pointer(software_feed_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_feed_handle:
-            iter = SoftwareFeedIterator(software_feed_handle, self._library)
+            iter = SoftwareFeedIterator(software_feed_handle)
             self._children.append(iter)
             return iter
 
@@ -579,7 +579,7 @@ class Session(object):
         """System resource properties"""
         if not hasattr(self, '_resource'):
             resource_handle = self._get_property(16941086, nisyscfg.types.ResourceHandle)
-            self._resource = HardwareResource(resource_handle, self._library)
+            self._resource = HardwareResource(resource_handle)
             self._children.append(self._resource)
         return self._resource
 
@@ -655,9 +655,9 @@ class Session(object):
 
 
 class ExpertInfoIterator(object):
-    def __init__(self, handle, library):
+    def __init__(self, handle):
         self._handle = handle
-        self._library = library
+        self._library = nisyscfg._library_singleton.get()
 
     def __del__(self):
         self.close()
@@ -692,9 +692,9 @@ class ExpertInfoIterator(object):
 @_PropertyBag(nisyscfg.properties.Filter)
 @_PropertyBag(nisyscfg.xnet.properties.Filter, expert='xnet')
 class Filter(object):
-    def __init__(self, session, library):
+    def __init__(self, session):
         self._handle = nisyscfg.types.FilterHandle()
-        self._library = library
+        self._library = nisyscfg._library_singleton.get()
         self._property_bag = nisyscfg.properties.PropertyBag(setter=self._set_property_with_type)
         error_code = self._library.CreateFilter(session, ctypes.pointer(self._handle))
         nisyscfg.errors.handle_error(self, error_code)
@@ -721,11 +721,11 @@ class Filter(object):
 
 
 class HardwareResourceIterator(object):
-    def __init__(self, session, handle, library):
+    def __init__(self, session, handle):
         self._children = []
         self._session = session
         self._handle = handle
-        self._library = library
+        self._library = nisyscfg._library_singleton.get()
 
     def __del__(self):
         self.close()
@@ -742,7 +742,7 @@ class HardwareResourceIterator(object):
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
-        resource = HardwareResource(resource_handle, self._library)
+        resource = HardwareResource(resource_handle)
         self._children.append(resource)
         return resource
 
@@ -760,9 +760,9 @@ class HardwareResourceIterator(object):
 @_PropertyBag(nisyscfg.pxi.properties.Resource, nisyscfg.pxi.properties.IndexedResource, expert='pxi')
 @_PropertyBag(nisyscfg.xnet.properties.Resource, expert='xnet')
 class HardwareResource(object):
-    def __init__(self, handle, library):
+    def __init__(self, handle):
         self._handle = handle
-        self._library = library
+        self._library = nisyscfg._library_singleton.get()
         self._property_bag = nisyscfg.properties.PropertyBag(
             setter=self._set_property,
             getter=self._get_property,
@@ -906,7 +906,7 @@ class HardwareResource(object):
         # session.
         overwritten_resource = (
             overwritten_resource_handle.value
-            and HardwareResource(overwritten_resource_handle, self._library)
+            and HardwareResource(overwritten_resource_handle)
         )
 
         # Do not return the bool 'name_already_existed' since it is equivalent
@@ -1163,9 +1163,9 @@ ComponentInfo = collections.namedtuple(
 
 
 class ComponentInfoIterator(object):
-    def __init__(self, handle, library):
+    def __init__(self, handle):
         self._handle = handle
-        self._library = library
+        self._library = nisyscfg._library_singleton.get()
 
     def __del__(self):
         self.close()
@@ -1212,9 +1212,9 @@ SoftwareFeed = collections.namedtuple(
 
 
 class SoftwareFeedIterator(object):
-    def __init__(self, handle, library):
+    def __init__(self, handle):
         self._handle = handle
-        self._library = library
+        self._library = nisyscfg._library_singleton.get()
 
     def __del__(self):
         self.close()
