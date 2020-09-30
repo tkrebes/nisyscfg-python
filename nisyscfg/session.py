@@ -65,15 +65,14 @@ class Session(object):
     are read by default. If FALSE, properties are queried once and cached in
     memory, which can optimize performance.
 
-    timeout - Specifies the time, in milliseconds, that the function waits
-    before the operation times out. When the operation succeeds, the session
-    handle that is returned is set to the default, which is defined as
-    300000 (5 minutes).
+    timeout - Specifies the time, in seconds, that the function waits before the
+    operation times out. When the operation succeeds, the session handle that is
+    returned is set to the default, which is defined as 300 (5 minutes).
 
     Raises an nisyscfg.errors.LibraryError exception in the event of an error.
     """
 
-    def __init__(self, target=None, username=None, password=None, language=nisyscfg.enums.Locale.DEFAULT, force_property_refresh=True, timeout=60000):
+    def __init__(self, target=None, username=None, password=None, language=nisyscfg.enums.Locale.DEFAULT, force_property_refresh=True, timeout=300.0):
         self._children = []
         self._session = nisyscfg.types.SessionHandle()
         self._library = nisyscfg._library_singleton.get()
@@ -87,7 +86,7 @@ class Session(object):
             c_string_encode(password),
             language,
             force_property_refresh,
-            timeout,
+            int(timeout * 1000),
             None,  # expert_enum_handle
             ctypes.pointer(self._session))
         nisyscfg.errors.handle_error(self, error_code)
@@ -207,7 +206,7 @@ class Session(object):
         self._children.append(filter)
         return filter
 
-    def restart(self, sync_call=True, install_mode=False, flush_dns=False, timeout=90000):
+    def restart(self, sync_call=True, install_mode=False, flush_dns=False, timeout=90.0):
         """
         Reboots a system or network device.
 
@@ -224,9 +223,8 @@ class Session(object):
         those names from memory. This parameter applies to the local Windows
         system.
 
-        timeout - The time, in milliseconds, that the function waits to
-        establish a connection before it returns an error. The default is
-        90,000 ms (90 s).
+        timeout - The time, in seconds, that the function waits to establish a
+        connection before it returns an error. The default is 90 s.
 
         Returns the new IP address of the rebooted system. This IP address may
         differ from the previous IP address if the system acquires a different
@@ -236,7 +234,7 @@ class Session(object):
         error.
         """
         new_ip_address = nisyscfg.types.simple_string()
-        error_code = self._library.Restart(self._session, sync_call, install_mode, flush_dns, timeout, new_ip_address)
+        error_code = self._library.Restart(self._session, sync_call, install_mode, flush_dns, int(timeout * 1000), new_ip_address)
         nisyscfg.errors.handle_error(self, error_code)
         return c_string_decode(new_ip_address.value)
 
