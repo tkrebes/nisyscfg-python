@@ -1,11 +1,15 @@
-import collections
 import nisyscfg.errors
+import typing
 
 from nisyscfg._lib import c_string_decode
 
 
-ExpertInfo = collections.namedtuple(
-    'ExpertInfo', ['expert_name', 'display_name', 'version']
+ExpertInfo = typing.NamedTuple(
+    'ExpertInfo', [
+        ('expert_name', str),
+        ('display_name', str),
+        ('version', str),
+    ]
 )
 
 

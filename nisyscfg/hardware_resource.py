@@ -1,9 +1,9 @@
-import collections
 import ctypes
 import nisyscfg.errors
 import nisyscfg.properties
 import nisyscfg.pxi.properties
 import nisyscfg.xnet.properties
+import typing
 
 from nisyscfg._lib import c_string_decode
 from nisyscfg._lib import c_string_encode
@@ -11,6 +11,36 @@ from nisyscfg._lib import c_string_encode
 
 class _NoDefault(object):
     pass
+
+
+SaveChangesResult = typing.NamedTuple(
+    'SaveChangesResult', [
+        ('restart_required', bool),
+        ('details', str),
+    ]
+)
+
+UpgradeFirmwareResult = typing.NamedTuple(
+    'UpgradeFirmwareResult', [
+        ('status', nisyscfg.enums.FirmwareStatus),
+        ('details', str),
+    ]
+)
+
+FirmwareStatusResult = typing.NamedTuple(
+    'FirmwareStatusResult', [
+        ('percent_complete', int),
+        ('status', nisyscfg.enums.FirmwareStatus),
+        ('details', str),
+    ]
+)
+
+DeleteResult = typing.NamedTuple(
+    'DeleteResult', [
+        ('dependent_items_deleted', bool),
+        ('details', str),
+    ]
+)
 
 
 class HardwareResourceIterator(object):
@@ -216,36 +246,34 @@ class HardwareResource(object):
         error_code = self._library.ResetHardware(self._handle, mode)
         nisyscfg.errors.handle_error(self, error_code)
 
-    def save_changes(self):
+    def save_changes(self) -> SaveChangesResult:
         """
         Writes and saves property changes on a device.
 
-        Returns tuple (restart_required, detailed_description)
+        Returns tuple (restart_required, details)
 
             restart_required - Specifies whether the changes require a reboot.
             If True, call restart.
 
-            detailed_description - A string containing results of any errors
+            details - A string containing results of any errors
             that may have occurred during execution.
 
         Raises an nisyscfg.errors.LibraryError exception in the event of an
         error.
         """
         restart_required = ctypes.c_int()
-        c_detailed_description = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.SaveResourceChanges(self._handle, restart_required, ctypes.pointer(c_detailed_description))
-        if c_detailed_description:
-            detailed_description = c_string_decode(ctypes.cast(c_detailed_description, ctypes.c_char_p).value)
-            error_code_2 = self._library.FreeDetailedString(c_detailed_description)
+        c_details = ctypes.POINTER(ctypes.c_char)()
+        error_code = self._library.SaveResourceChanges(self._handle, restart_required, ctypes.pointer(c_details))
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_details)
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
 
-        ReturnData = collections.namedtuple(
-            'ReturnData',
-            'restart_required detailed_description'
+        return SaveChangesResult(
+            restart_required=restart_required.value != 0,
+            details=details
         )
-
-        return ReturnData(restart_required.value != 0, detailed_description)
 
     def self_test(self, mode=0):
         """
@@ -264,16 +292,24 @@ class HardwareResource(object):
         Raises an nisyscfg.errors.LibraryError exception in the event of an
         error.
         """
-        c_detailed_result = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.SelfTestHardware(self._handle, mode, ctypes.pointer(c_detailed_result))
-        if c_detailed_result:
-            detailed_result = c_string_decode(ctypes.cast(c_detailed_result, ctypes.c_char_p).value)
-            error_code_2 = self._library.FreeDetailedString(c_detailed_result)
+        c_details = ctypes.POINTER(ctypes.c_char)()
+        error_code = self._library.SelfTestHardware(self._handle, mode, ctypes.pointer(c_details))
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_details)
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
-        return detailed_result
 
-    def upgrade_firmware(self, version=None, filepath=None, auto_stop_task=True, force=False, sync_call=True):
+        return details
+
+    def upgrade_firmware(
+        self,
+        version: str = None,
+        filepath: str = None,
+        auto_stop_task: bool = True,
+        force: bool = False,
+        sync_call: bool = True
+    ) -> UpgradeFirmwareResult:
         """
         Updates the firmware on the target.
 
@@ -304,14 +340,14 @@ class HardwareResource(object):
         running even after this function returns. To check the status, query
         the firmware_status property. The default is True.
 
-        Returns tuple (status, detailed_result)
+        Returns tuple (status, details)
 
             status - The status of the firmware update. If this output returns
             FirmwareStatus.READY_PENDING_USER_RESTART, call restart. You can
-            view more information about additional results in the
-            detailed_result output.
+            view more information about additional results in the details
+            output.
 
-            detailed_result - Results of any errors that may have occurred when
+            details - Results of any errors that may have occurred when
             this function completed. This output also may return additional
             information about the value returned from status.
 
@@ -322,40 +358,35 @@ class HardwareResource(object):
             raise ValueError("version and filepath are mutually exclusive parameters")
 
         firmware_status = ctypes.c_int()
-        c_detailed_result = ctypes.POINTER(ctypes.c_char)()
+        c_details = ctypes.POINTER(ctypes.c_char)()
         if version:
             error_code = self._library.UpgradeFirmwareVersion(
                 self._handle, c_string_encode(version), auto_stop_task, force, sync_call,
-                ctypes.pointer(firmware_status), ctypes.pointer(c_detailed_result))
+                ctypes.pointer(firmware_status), ctypes.pointer(c_details))
         elif filepath:
             error_code = self._library.UpgradeFirmwareFromFile(
                 self._handle, c_string_encode(filepath), auto_stop_task, force, sync_call,
-                ctypes.pointer(firmware_status), ctypes.pointer(c_detailed_result))
+                ctypes.pointer(firmware_status), ctypes.pointer(c_details))
         else:
             raise ValueError("upgrade_firmware() requires either version or filepath to be specified")
 
-        if c_detailed_result:
-            detailed_result = c_string_decode(ctypes.cast(c_detailed_result, ctypes.c_char_p).value)
-            error_code_2 = self._library.FreeDetailedString(c_detailed_result)
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_details)
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
 
-        ReturnData = collections.namedtuple(
-            'ReturnData',
-            'status detailed_result'
-        )
-
-        return ReturnData(
-            nisyscfg.enums.FirmwareStatus(firmware_status.value),
-            detailed_result
+        return UpgradeFirmwareResult(
+            status=nisyscfg.enums.FirmwareStatus(firmware_status.value),
+            details=details
         )
 
     @property
-    def firmware_status(self):
+    def firmware_status(self) -> FirmwareStatusResult:
         """
         Returns the status of the firmware upgrade in progress.
 
-        Returns tuple (percent_complete, status, detailed_result)
+        Returns tuple (percent_complete, status, details)
 
             percent_complete - The status, in percent, of the current step in
             the firmware upgrade. This parameter returns -1 if there is no
@@ -363,11 +394,11 @@ class HardwareResource(object):
 
             status - The status of the firmware update. If this output
             returns FirmwareStatus.READY_PENDING_USER_RESTART, call restart. You
-            can view more information about additional results in the
-            detailed_result output.
+            can view more information about additional results in the details
+            output.
 
-            detailed_result - Results of any errors that may have occurred when
-            this function completed. This output also may return additional
+            details - Results of any errors that may have occurred when this
+            function completed. This output also may return additional
             information about the value returned from status.
 
         Raises an nisyscfg.errors.LibraryError exception in the event of an
@@ -375,24 +406,19 @@ class HardwareResource(object):
         """
         percent_complete = ctypes.c_int()
         firmware_status = ctypes.c_int()
-        c_detailed_result = ctypes.POINTER(ctypes.c_char)()
+        c_details = ctypes.POINTER(ctypes.c_char)()
         error_code = self._library.CheckFirmwareStatus(
-            self._handle, percent_complete, firmware_status, ctypes.pointer(c_detailed_result))
-        if c_detailed_result:
-            detailed_result = c_string_decode(ctypes.cast(c_detailed_result, ctypes.c_char_p).value)
-            error_code_2 = self._library.FreeDetailedString(c_detailed_result)
+            self._handle, percent_complete, firmware_status, ctypes.pointer(c_details))
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_details)
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
 
-        ReturnData = collections.namedtuple(
-            'ReturnData',
-            'percent_complete status detailed_result'
-        )
-
-        return ReturnData(
-            percent_complete.value,
-            nisyscfg.enums.FirmwareStatus(firmware_status.value),
-            detailed_result,
+        return FirmwareStatusResult(
+            percent_complete=percent_complete.value,
+            status=nisyscfg.enums.FirmwareStatus(firmware_status.value),
+            details=details,
         )
 
     def delete(self, mode=nisyscfg.enums.DeleteValidationMode.DELETE_IF_NO_DEPENDENCIES_EXIST):
@@ -420,31 +446,29 @@ class HardwareResource(object):
                                           unusable state.
         ================================= ======================================
 
-        Returns tuple (dependent_items_deleted, detailed_result)
+        Returns tuple (dependent_items_deleted, details)
 
             dependent_items_deleted - Returns whether resources other than the
             specified one were deleted. For example, this may happen if the
             resource is a simulated chassis that contained modules.
 
-            detailed_result - A string containing results of any errors that may
+            details - A string containing results of any errors that may
             have occurred during execution.
 
         Raises an nisyscfg.errors.LibraryError exception in the event of an
         error.
         """
         dependent_items_deleted = ctypes.c_int()
-        c_detailed_result = ctypes.POINTER(ctypes.c_char)()
+        c_details = ctypes.POINTER(ctypes.c_char)()
         error_code = self._library.DeleteResource(
-            self._handle, mode, dependent_items_deleted, ctypes.pointer(c_detailed_result))
-        if c_detailed_result:
-            detailed_result = c_string_decode(ctypes.cast(c_detailed_result, ctypes.c_char_p).value)
-            error_code_2 = self._library.FreeDetailedString(c_detailed_result)
+            self._handle, mode, dependent_items_deleted, ctypes.pointer(c_details))
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_details)
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
 
-        ReturnData = collections.namedtuple(
-            'ReturnData',
-            'dependent_items_deleted detailed_result'
+        return DeleteResult(
+            dependent_items_deleted=dependent_items_deleted.value != 0,
+            details=details
         )
-
-        return ReturnData(dependent_items_deleted.value != 0, detailed_result)

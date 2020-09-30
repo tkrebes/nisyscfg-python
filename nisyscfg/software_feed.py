@@ -1,11 +1,16 @@
-import collections
 import ctypes
 import nisyscfg.errors
+import typing
 
 from nisyscfg._lib import c_string_decode
 
-SoftwareFeed = collections.namedtuple(
-    'SoftwareFeed', ['name', 'uri', 'enabled', 'trusted']
+SoftwareFeed = typing.NamedTuple(
+    'SoftwareFeed', [
+        ('name', str),
+        ('uri', str),
+        ('enabled', bool),
+        ('trusted', bool),
+    ]
 )
 
 
