@@ -688,9 +688,6 @@ class ExpertInfoIterator(object):
             nisyscfg.errors.handle_error(self, error_code)
             self._handle = None
 
-    def next(self):
-        return self.__next__()
-
 
 @_PropertyBag(nisyscfg.properties.Filter)
 @_PropertyBag(nisyscfg.xnet.properties.Filter, expert='xnet')
@@ -757,9 +754,6 @@ class HardwareResourceIterator(object):
             error_code = self._library.CloseHandle(self._handle)
             nisyscfg.errors.handle_error(self, error_code)
             self._handle = None
-
-    def next(self):
-        return self.__next__()
 
 
 @_PropertyBag(nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource)
@@ -1211,9 +1205,6 @@ class ComponentInfoIterator(object):
             nisyscfg.errors.handle_error(self, error_code)
             self._handle = None
 
-    def next(self):
-        return self.__next__()
-
 
 SoftwareFeed = collections.namedtuple(
     'SoftwareFeed', ['name', 'uri', 'enabled', 'trusted']
@@ -1252,6 +1243,3 @@ class SoftwareFeedIterator(object):
             error_code = self._library.CloseHandle(self._handle)
             nisyscfg.errors.handle_error(self, error_code)
             self._handle = None
-
-    def next(self):
-        return self.__next__()
