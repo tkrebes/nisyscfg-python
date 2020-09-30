@@ -3,6 +3,7 @@ import ctypes
 
 import nisyscfg
 import nisyscfg._library_singleton
+import nisyscfg.expert_info
 import nisyscfg.filter
 import nisyscfg.properties
 import nisyscfg.pxi.properties
@@ -139,7 +140,7 @@ class Session(object):
             expert_names = ','.join(expert_names)
         error_code = self._library.GetSystemExperts(self._session, c_string_encode(expert_names), ctypes.pointer(expert_handle))
         nisyscfg.errors.handle_error(self, error_code)
-        iter = ExpertInfoIterator(expert_handle)
+        iter = nisyscfg.expert_info.ExpertInfoIterator(expert_handle)
         self._children.append(iter)
         return iter
 
@@ -601,41 +602,6 @@ class Session(object):
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
         return restart_required.value != 0, detailed_description
-
-
-class ExpertInfoIterator(object):
-    def __init__(self, handle):
-        self._handle = handle
-        self._library = nisyscfg._library_singleton.get()
-
-    def __del__(self):
-        self.close()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if not self._handle:
-            # TODO(tkrebes): raise RuntimeError
-            raise StopIteration()
-        expert_name = nisyscfg.types.simple_string()
-        display_name = nisyscfg.types.simple_string()
-        version = nisyscfg.types.simple_string()
-        error_code = self._library.NextExpertInfo(self._handle, expert_name, display_name, version)
-        if error_code == 1:
-            raise StopIteration()
-        nisyscfg.errors.handle_error(self, error_code)
-        return {
-            'expert_name': c_string_decode(expert_name.value),
-            'display_name': c_string_decode(display_name.value),
-            'version': c_string_decode(version.value),
-        }
-
-    def close(self):
-        if self._handle:
-            error_code = self._library.CloseHandle(self._handle)
-            nisyscfg.errors.handle_error(self, error_code)
-            self._handle = None
 
 
 class HardwareResourceIterator(object):
