@@ -304,30 +304,7 @@ class IndexedTimestampProperty(IndexedProperty):
         raise NotImplementedError
 
 
-class PropertyGroupMeta(type):
-    def __getattribute__(cls, name):
-        value = type.__getattribute__(cls, name)
-        if isinstance(value, Property):
-            value.group = cls
-        return value
-
-
-PropertyGroup = PropertyGroupMeta('PropertyGroup', (object,), {})
-
-
-class ResourceGroup(PropertyGroup):
-    pass
-
-
-class SystemGroup(PropertyGroup):
-    pass
-
-
-class FilterGroup(PropertyGroup):
-    pass
-
-
-class Resource(ResourceGroup):
+class Resource(object):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     CONNECTS_TO_BUS_TYPE = IntProperty(16785408, enum=BusType)
@@ -432,7 +409,7 @@ class Resource(ResourceGroup):
     NUMBER_OF_USER_SWITCHES = IntProperty(17293312)
 
 
-class IndexedResource(ResourceGroup):
+class IndexedResource(object):
     SERVICE_TYPE = IndexedIntProperty(17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType)
     AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS)
     WLAN_AVAILABLE_SSID = IndexedStringProperty(219336704, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS)
@@ -468,7 +445,7 @@ class IndexedResource(ResourceGroup):
     EXPERT_USER_ALIAS = IndexedStringProperty(16904192, Resource.NUMBER_OF_EXPERTS)
 
 
-class System(SystemGroup):
+class System(object):
     DEVICE_CLASS = StringProperty(16941057)
     PRODUCT_ID = IntProperty(16941058)
     FILE_SYSTEM = IntProperty(16941060, enum=FileSystemMode)
@@ -514,7 +491,7 @@ class System(SystemGroup):
     SUBNET_MASK = StringProperty(16941083)
 
 
-class Filter(FilterGroup):
+class Filter(object):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     SERVICE_TYPE = IntProperty(17014784, enum=ServiceType)

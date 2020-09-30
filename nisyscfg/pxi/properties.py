@@ -5,7 +5,6 @@ from nisyscfg.properties import (
     IndexedStringProperty,
     IndexedUnsignedIntProperty,
     IntProperty,
-    ResourceGroup,
     UnsignedIntProperty,
 )
 from nisyscfg.pxi.enums import (
@@ -22,7 +21,7 @@ from nisyscfg.pxi.enums import (
 )
 
 
-class Resource(ResourceGroup):
+class Resource(object):
     # Chassis attributes
     PXI_CHASSIS_NUMBER = UnsignedIntProperty(184565760)
 
@@ -65,7 +64,7 @@ class Resource(ResourceGroup):
     CAL_EXT_DAC_VALUE = UnsignedIntProperty(186925056)
 
 
-class IndexedResource(ResourceGroup):
+class IndexedResource(object):
     # Power supply index attributes
     POWER_SUPPLY_NAME = IndexedStringProperty(186781696, Resource.POWER_SUPPLY_BAY_COUNT)
     POWER_SUPPLY_STATE = IndexedUnsignedIntProperty(186789888, Resource.POWER_SUPPLY_BAY_COUNT, PowerSupplyStates)
