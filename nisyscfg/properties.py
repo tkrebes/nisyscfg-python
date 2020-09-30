@@ -22,6 +22,8 @@ from nisyscfg.enums import (
     SwitchState,
 )
 
+from typing import List, Union
+
 
 class PropertyAccessor(object):
 
@@ -300,7 +302,11 @@ class IndexedTimestampProperty(IndexedProperty):
         raise NotImplementedError
 
 
-class Resource(object):
+class PropertyGroup(object):
+    pass
+
+
+class Resource(PropertyGroup):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     CONNECTS_TO_BUS_TYPE = IntProperty(16785408, enum=BusType)
@@ -405,7 +411,7 @@ class Resource(object):
     NUMBER_OF_USER_SWITCHES = IntProperty(17293312)
 
 
-class IndexedResource(object):
+class IndexedResource(PropertyGroup):
     SERVICE_TYPE = IndexedIntProperty(17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType)
     AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS)
     WLAN_AVAILABLE_SSID = IndexedStringProperty(219336704, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS)
@@ -441,7 +447,7 @@ class IndexedResource(object):
     EXPERT_USER_ALIAS = IndexedStringProperty(16904192, Resource.NUMBER_OF_EXPERTS)
 
 
-class System(object):
+class System(PropertyGroup):
     DEVICE_CLASS = StringProperty(16941057)
     PRODUCT_ID = IntProperty(16941058)
     FILE_SYSTEM = IntProperty(16941060, enum=FileSystemMode)
@@ -487,7 +493,7 @@ class System(object):
     SUBNET_MASK = StringProperty(16941083)
 
 
-class Filter(object):
+class Filter(PropertyGroup):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     SERVICE_TYPE = IntProperty(17014784, enum=ServiceType)
@@ -508,3 +514,56 @@ class Filter(object):
     EXPERT_NAME = StringProperty(16900096)
     RESOURCE_NAME = StringProperty(16896000)
     USER_ALIAS = StringProperty(16904192)
+
+
+class Property(object):
+
+    __slots__ = ('_type_property', )
+
+    def __init__(self, type_property: TypeProperty):
+        self._type_property = type_property
+
+    def __get__(self, instance, cls):
+        return self._type_property.get(instance._property_accessor)
+
+    def __set__(self, instance, value):
+        return self._type_property.set(instance._property_accessor, value)
+
+    def __delete__(self, instance):
+        raise NotImplementedError
+
+
+class Expert(object):
+
+    def __init__(self, *property_groups: List[PropertyGroup]):
+        class _ExpertPropertyBag(object):
+            def __init__(self, property_bag):
+                self._property_accessor = property_bag
+        self._expert = PropertyBag(*property_groups)(_ExpertPropertyBag)
+
+    def __get__(self, instance, cls):
+        return self._expert(instance._property_accessor)
+
+    def __set__(self, instance, value):
+        raise NotImplementedError
+
+    def __delete__(self, instance):
+        raise NotImplementedError
+
+
+class PropertyBag(object):
+
+    def __init__(self, *property_groups: List[PropertyGroup], expert: Union[None, str] = None):
+        self._property_groups = property_groups
+        self._expert = expert
+
+    def __call__(self, session):
+        if self._expert:
+            setattr(session, self._expert, Expert(*self._property_groups))
+        else:
+            for group in self._property_groups:
+                for prop in dir(group):
+                    type_property = getattr(group, prop)
+                    if isinstance(type_property, TypeProperty):
+                        setattr(session, prop.lower(), Property(type_property))
+        return session

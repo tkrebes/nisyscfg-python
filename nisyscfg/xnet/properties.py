@@ -3,6 +3,7 @@ from nisyscfg.properties import (
     StringProperty,
     UnsignedIntProperty,
     IntProperty,
+    PropertyGroup,
 )
 from nisyscfg.xnet.enums import (
     EnetPortMode,
@@ -18,7 +19,7 @@ from nisyscfg.xnet.enums import (
 )
 
 
-class Resource(object):
+class Resource(PropertyGroup):
     # Read-only device properties
     NUMBER_OF_PORTS = UnsignedIntProperty(167780352)
 
@@ -48,7 +49,7 @@ class Resource(object):
     ENET_INTERRUPT_MODERATION = IntProperty(167878656, EnetInterruptModeration)
 
 
-class Filter(object):
+class Filter(PropertyGroup):
     # Write-only device properties
     NUMBER_OF_PORTS = UnsignedIntProperty(167780352)
 

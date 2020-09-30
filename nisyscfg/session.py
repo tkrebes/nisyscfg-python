@@ -17,59 +17,7 @@ class _NoDefault(object):
     pass
 
 
-class _Property(object):
-
-    __slots__ = ('_property', )
-
-    def __init__(self, property):
-        self._property = property
-
-    def __get__(self, instance, cls):
-        return self._property.get(instance._property_accessor)
-
-    def __set__(self, instance, value):
-        return self._property.set(instance._property_accessor, value)
-
-    def __delete__(self, instance):
-        raise NotImplementedError
-
-
-class _Expert(object):
-
-    def __init__(self, *property_groups):
-        class _ExpertPropertyBag(object):
-            def __init__(self, property_bag):
-                self._property_accessor = property_bag
-        self._expert = _PropertyBag(*property_groups)(_ExpertPropertyBag)
-
-    def __get__(self, instance, cls):
-        return self._expert(instance._property_accessor)
-
-    def __set__(self, instance, value):
-        raise NotImplementedError
-
-    def __delete__(self, instance):
-        raise NotImplementedError
-
-
-class _PropertyBag(object):
-
-    def __init__(self, *property_groups, expert=None):
-        self._property_groups = property_groups
-        self._expert = expert
-
-    def __call__(self, session):
-        if self._expert:
-            setattr(session, self._expert, _Expert(*self._property_groups))
-        else:
-            for group in self._property_groups:
-                for prop in dir(group):
-                    if not prop.startswith('_'):
-                        setattr(session, prop.lower(), _Property(getattr(group, prop)))
-        return session
-
-
-@_PropertyBag(nisyscfg.properties.System)
+@nisyscfg.properties.PropertyBag(nisyscfg.properties.System)
 class Session(object):
     """
     Initializes a system configuration session with a specific system.
@@ -689,8 +637,8 @@ class ExpertInfoIterator(object):
             self._handle = None
 
 
-@_PropertyBag(nisyscfg.properties.Filter)
-@_PropertyBag(nisyscfg.xnet.properties.Filter, expert='xnet')
+@nisyscfg.properties.PropertyBag(nisyscfg.properties.Filter)
+@nisyscfg.properties.PropertyBag(nisyscfg.xnet.properties.Filter, expert='xnet')
 class Filter(object):
     def __init__(self, session):
         self._handle = nisyscfg.types.FilterHandle()
@@ -756,9 +704,9 @@ class HardwareResourceIterator(object):
             self._handle = None
 
 
-@_PropertyBag(nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource)
-@_PropertyBag(nisyscfg.pxi.properties.Resource, nisyscfg.pxi.properties.IndexedResource, expert='pxi')
-@_PropertyBag(nisyscfg.xnet.properties.Resource, expert='xnet')
+@nisyscfg.properties.PropertyBag(nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource)
+@nisyscfg.properties.PropertyBag(nisyscfg.pxi.properties.Resource, nisyscfg.pxi.properties.IndexedResource, expert='pxi')
+@nisyscfg.properties.PropertyBag(nisyscfg.xnet.properties.Resource, expert='xnet')
 class HardwareResource(object):
     def __init__(self, handle):
         self._handle = handle
