@@ -194,7 +194,7 @@ class Session(object):
         self._children.append(iter)
         return iter
 
-    def create_filter(self):
+    def create_filter(self) -> nisyscfg.filter.Filter:
         """
         Creates a hardware filter object that is used to query for specific
         resources in a system. After creating a filter, set one or more
