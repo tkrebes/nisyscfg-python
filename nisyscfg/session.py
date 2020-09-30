@@ -592,6 +592,21 @@ class Session(object):
 
         return result
 
+    def uninstall_all(self, auto_restart: bool = True):
+        """
+        Uninstalls all software from a specified system.
+
+        auto_restart - Restarts the system before and/or after the operation as
+        required by the target's boot flow. The operation will fail if you
+        choose not to restart the target automatically and the target's boot
+        flow requires it to be in safe mode or restart after the operation.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        error_code = self._library.UninstallAll(self._session, auto_restart)
+        nisyscfg.errors.handle_error(self, error_code)
+
     def get_software_feeds(self) -> nisyscfg.software_feed.SoftwareFeedIterator:
         """
         Retrieves a list of configured software feeds. A feed represents a
