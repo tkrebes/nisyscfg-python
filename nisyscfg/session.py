@@ -18,8 +18,19 @@ from nisyscfg._lib import c_string_encode
 from typing import NamedTuple, Union
 
 
-class _NoDefault(object):
-    pass
+InstallAllResult = NamedTuple(
+    "InstallAllResult", [
+        ('installed_components', nisyscfg.component_info.ComponentInfoIterator),
+        ('broken_dependencies', nisyscfg.dependency_info.DependencyInfoIterator),
+    ]
+)
+
+SaveChangesResult = NamedTuple(
+    "SaveChangesResult", [
+        ('restart_required', bool),
+        ('details', str),
+    ]
+)
 
 
 @nisyscfg.properties.PropertyBag(nisyscfg.properties.System)
@@ -72,7 +83,15 @@ class Session(object):
     Raises an nisyscfg.errors.LibraryError exception in the event of an error.
     """
 
-    def __init__(self, target=None, username=None, password=None, language=nisyscfg.enums.Locale.DEFAULT, force_property_refresh=True, timeout=300.0):
+    def __init__(
+        self,
+        target: Union[None, str] = None,
+        username: Union[None, str] = None,
+        password: Union[None, str] = None,
+        language: nisyscfg.enums.Locale = nisyscfg.enums.Locale.DEFAULT,
+        force_property_refresh: bool = True,
+        timeout: float = 300.0
+    ) -> None:
         self._children = []
         self._session = nisyscfg.types.SessionHandle()
         self._library = nisyscfg._library_singleton.get()
@@ -126,7 +145,7 @@ class Session(object):
             nisyscfg.errors.handle_error(self, error_code)
             self._session = None
 
-    def get_system_experts(self, expert_names=''):
+    def get_system_experts(self, expert_names: str = '') -> nisyscfg.expert_info.ExpertInfoIterator:
         """
         Returns the experts available on the system.
 
@@ -206,7 +225,13 @@ class Session(object):
         self._children.append(filter)
         return filter
 
-    def restart(self, sync_call=True, install_mode=False, flush_dns=False, timeout=90.0):
+    def restart(
+        self,
+        sync_call: bool = True,
+        install_mode: bool = False,
+        flush_dns: bool = False,
+        timeout: float = 90.0
+    ) -> str:
         """
         Reboots a system or network device.
 
@@ -438,7 +463,7 @@ class Session(object):
             self._children.append(iter)
             return iter
 
-    def add_software_feed(self, name: str, uri: str, enabled: bool, trusted: bool):
+    def add_software_feed(self, name: str, uri: str, enabled: bool, trusted: bool) -> None:
         """
         Adds a software feed to the system.
 
@@ -468,7 +493,7 @@ class Session(object):
             nisyscfg.enums.Bool(trusted))
         nisyscfg.errors.handle_error(self, error_code)
 
-    def modify_software_feed(self, old_name: str, new_name: str, uri: str, enabled: bool, trusted: bool):
+    def modify_software_feed(self, old_name: str, new_name: str, uri: str, enabled: bool, trusted: bool) -> None:
         """
         Modifies an existing software feed by name.
 
@@ -517,7 +542,11 @@ class Session(object):
         error_code = self._library.RemoveSoftwareFeed(self._session, c_string_encode(name))
         nisyscfg.errors.handle_error(self, error_code)
 
-    def install_all(self, auto_restart: bool = True, deselect_conflicts: bool = True):
+    def install_all(
+        self,
+        auto_restart: bool = True,
+        deselect_conflicts: bool = True
+    ) -> InstallAllResult:
         """
         Installs software on a Real-Time system.
 
@@ -553,14 +582,7 @@ class Session(object):
             ctypes.pointer(broken_dependency_handle))
         nisyscfg.errors.handle_error(self, error_code)
 
-        ReturnValue = NamedTuple(
-            "ReturnValue", [
-                ('installed_components', nisyscfg.component_info.ComponentInfoIterator),
-                ('broken_dependencies', nisyscfg.dependency_info.DependencyInfoIterator),
-            ]
-        )
-
-        result = ReturnValue(
+        result = InstallAllResult(
             installed_components=nisyscfg.component_info.ComponentInfoIterator(installed_component_handle),
             broken_dependencies=nisyscfg.dependency_info.DependencyInfoIterator(broken_dependency_handle),
         )
@@ -618,21 +640,6 @@ class Session(object):
 
         return c_string_decode(value.value)
 
-    def get_property(self, tag, default=_NoDefault()):
-        """
-        Returns value of system property
-
-        Return the value for system property specified by the tag, else default.
-        If default is not given and the property does not exist, this function
-        raises an nisyscfg.errors.LibraryError exception.
-        """
-        try:
-            return self[tag]
-        except nisyscfg.errors.LibraryError as err:
-            if err.code != nisyscfg.errors.Status.PROP_DOES_NOT_EXIST or isinstance(default, _NoDefault):
-                raise
-            return default
-
     def _set_property(self, id, value, c_type, nisyscfg_type):
         if c_type == ctypes.c_char_p:
             value = c_string_encode(value)
@@ -644,27 +651,30 @@ class Session(object):
         error_code = self._library.SetSystemProperty(self._session, id, value)
         nisyscfg.errors.handle_error(self, error_code)
 
-    def save_changes(self):
+    def save_changes(self) -> SaveChangesResult:
         """
         Saves changes made to systems.
 
-        Returns tuple (restart_required, result)
+        Returns tuple (restart_required, details)
 
             restart_required - Specifies whether the changes require a reboot.
             If TRUE, call restart().
 
-            result - A string containing results of any errors that may have
+            details - A string containing results of any errors that may have
             occurred during execution.
 
         Raises an nisyscfg.errors.LibraryError exception in the event of an
         error.
         """
         restart_required = ctypes.c_int()
-        c_detailed_description = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.SaveSystemChanges(self._session, restart_required, ctypes.pointer(c_detailed_description))
-        if c_detailed_description:
-            detailed_description = c_string_decode(ctypes.cast(c_detailed_description, ctypes.c_char_p).value)
-            error_code_2 = self._library.FreeDetailedString(c_detailed_description)
+        c_details = ctypes.POINTER(ctypes.c_char)()
+        error_code = self._library.SaveSystemChanges(self._session, restart_required, ctypes.pointer(c_details))
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_details)
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
-        return restart_required.value != 0, detailed_description
+        return SaveChangesResult(
+            restart_required=restart_required.value != 0,
+            details=details
+        )
