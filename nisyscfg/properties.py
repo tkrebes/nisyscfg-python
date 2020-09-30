@@ -87,11 +87,7 @@ class PropertyAccessor(object):
         raise NotImplementedError
 
 
-class Property(object):
-    __slots__ = ('group',)
-
-
-class TypeProperty(Property):
+class TypeProperty(object):
 
     __slots__ = '_id', '_enum', '_readable', '_writeable'
 
@@ -228,9 +224,9 @@ class IndexedPropertyItems(object):
         return IndexedPropertyItemsIter(self)
 
 
-class IndexedProperty(Property):
+class IndexedProperty(TypeProperty):
 
-    __slots__ = '_id', '_count_property', '_enum', '_readable', '_writeable'
+    __slots__ = ('_count_property', )
 
     def __init__(self, id, count_property, enum=None, *, readable: bool = True, writeable: bool = True):
         self._id = id
