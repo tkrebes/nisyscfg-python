@@ -1,4 +1,3 @@
-import collections
 import ctypes
 
 import nisyscfg
@@ -9,6 +8,7 @@ import nisyscfg.filter
 import nisyscfg.hardware_resource
 import nisyscfg.properties
 import nisyscfg.pxi.properties
+import nisyscfg.software_feed
 import nisyscfg.xnet.properties
 
 from nisyscfg._lib import c_string_decode
@@ -518,7 +518,7 @@ class Session(object):
         error_code = self._library.RemoveSoftwareFeed(self._session, c_string_encode(name))
         nisyscfg.errors.handle_error(self, error_code)
 
-    def get_software_feeds(self):
+    def get_software_feeds(self) -> nisyscfg.software_feed.SoftwareFeedIterator:
         """
         Retrieves a list of configured software feeds. A feed represents a
         location that the package manager uses to find and download available
@@ -534,7 +534,7 @@ class Session(object):
         error_code = self._library.GetSoftwareFeeds(self._session, ctypes.pointer(software_feed_handle))
         nisyscfg.errors.handle_error(self, error_code)
         if software_feed_handle:
-            iter = SoftwareFeedIterator(software_feed_handle)
+            iter = nisyscfg.software_feed.SoftwareFeedIterator(software_feed_handle)
             self._children.append(iter)
             return iter
 
@@ -616,42 +616,3 @@ class Session(object):
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
         return restart_required.value != 0, detailed_description
-
-
-SoftwareFeed = collections.namedtuple(
-    'SoftwareFeed', ['name', 'uri', 'enabled', 'trusted']
-)
-
-
-class SoftwareFeedIterator(object):
-    def __init__(self, handle):
-        self._handle = handle
-        self._library = nisyscfg._library_singleton.get()
-
-    def __del__(self):
-        self.close()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        name = nisyscfg.types.simple_string()
-        uri = nisyscfg.types.simple_string()
-        enabled = ctypes.c_int()
-        trusted = ctypes.c_int()
-        error_code = self._library.NextSoftwareFeed(self._handle, name, uri, ctypes.pointer(enabled), ctypes.pointer(trusted))
-        if error_code == 1:
-            raise StopIteration()
-        nisyscfg.errors.handle_error(self, error_code)
-        return SoftwareFeed(
-            name=c_string_decode(name.value),
-            uri=c_string_decode(uri.value),
-            enabled=enabled.value != 0,
-            trusted=trusted.value != 0,
-        )
-
-    def close(self):
-        if self._handle:
-            error_code = self._library.CloseHandle(self._handle)
-            nisyscfg.errors.handle_error(self, error_code)
-            self._handle = None
