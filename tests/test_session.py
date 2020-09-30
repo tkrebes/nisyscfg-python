@@ -335,7 +335,7 @@ def test_find_hardware_with_filter_properties_specified(lib_mock):
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
-        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), nisyscfg.FilterProperties.EXPERT_NAME._id, nisyscfg.enums.PropertyType.STRING, b'my_expert'),
+        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), nisyscfg.properties.Filter.EXPERT_NAME._id, nisyscfg.enums.PropertyType.STRING, b'my_expert'),
         mock.call().NISysCfgFindHardware(CVoidPMatcher(SESSION_HANDLE), nisyscfg.enums.FilterMode.MATCH_VALUES_ALL, mock.ANY, b'', mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
@@ -376,7 +376,7 @@ def test_find_hardware_with_passed_filter_properties_specified(lib_mock, propert
         filter = session.create_filter()
         setattr(filter, property_name.lower(), assigned_value)
         session.find_hardware(filter)
-        property_id = getattr(nisyscfg.FilterProperties, property_name)._id
+        property_id = getattr(nisyscfg.properties.Filter, property_name)._id
     expected_calls = [
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
@@ -411,7 +411,7 @@ def test_create_filter_and_set_syscfg_filter_property(lib_mock):
         mock.call(mock.ANY),
         mock.call().NISysCfgInitializeSession(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgCreateFilter(CVoidPMatcher(SESSION_HANDLE), mock.ANY),
-        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), nisyscfg.FilterProperties.EXPERT_NAME._id, nisyscfg.enums.PropertyType.STRING, b'my_expert'),
+        mock.call().NISysCfgSetFilterPropertyWithType(CVoidPMatcher(FILTER_HANDLE), nisyscfg.properties.Filter.EXPERT_NAME._id, nisyscfg.enums.PropertyType.STRING, b'my_expert'),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(FILTER_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
     ]
@@ -515,7 +515,7 @@ def test_get_hardware_resource_property(lib_mock, config_next_resource_side_effe
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
         assert expected_value == getattr(resource, property_name.lower())
-        property_id = getattr(nisyscfg.ResourceProperties, property_name)._id
+        property_id = getattr(nisyscfg.properties.Resource, property_name)._id
 
     expected_calls = [
         mock.call(mock.ANY),
@@ -588,8 +588,8 @@ def test_get_hardware_index_property(lib_mock, property_name, count_property, ex
         resource = next(session.find_hardware())
         property = getattr(resource, property_name.lower())
         assert expected_values == list(property)
-        count_property_id = getattr(nisyscfg.ResourceProperties, count_property)._id
-        property_id = getattr(nisyscfg.IndexedResourceProperties, property_name)._id
+        count_property_id = getattr(nisyscfg.properties.Resource, count_property)._id
+        property_id = getattr(nisyscfg.properties.IndexedResource, property_name)._id
 
     expected_calls = [
         mock.call(mock.ANY),
