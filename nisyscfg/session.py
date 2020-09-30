@@ -25,10 +25,10 @@ class _Property(object):
         self._property = property
 
     def __get__(self, instance, cls):
-        return self._property.get(instance._property_bag)
+        return self._property.get(instance._property_accessor)
 
     def __set__(self, instance, value):
-        return self._property.set(instance._property_bag, value)
+        return self._property.set(instance._property_accessor, value)
 
     def __delete__(self, instance):
         raise NotImplementedError
@@ -39,11 +39,11 @@ class _Expert(object):
     def __init__(self, *property_groups):
         class _ExpertPropertyBag(object):
             def __init__(self, property_bag):
-                self._property_bag = property_bag
+                self._property_accessor = property_bag
         self._expert = _PropertyBag(*property_groups)(_ExpertPropertyBag)
 
     def __get__(self, instance, cls):
-        return self._expert(instance._property_bag)
+        return self._expert(instance._property_accessor)
 
     def __set__(self, instance, value):
         raise NotImplementedError
@@ -124,7 +124,7 @@ class Session(object):
         self._children = []
         self._session = nisyscfg.types.SessionHandle()
         self._library = nisyscfg._library_singleton.get()
-        self._property_bag = nisyscfg.properties.PropertyBag(
+        self._property_accessor = nisyscfg.properties.PropertyAccessor(
             setter=self._set_property,
             getter=self._get_property,
         )
@@ -695,7 +695,7 @@ class Filter(object):
     def __init__(self, session):
         self._handle = nisyscfg.types.FilterHandle()
         self._library = nisyscfg._library_singleton.get()
-        self._property_bag = nisyscfg.properties.PropertyBag(setter=self._set_property_with_type)
+        self._property_accessor = nisyscfg.properties.PropertyAccessor(setter=self._set_property_with_type)
         error_code = self._library.CreateFilter(session, ctypes.pointer(self._handle))
         nisyscfg.errors.handle_error(self, error_code)
 
@@ -763,7 +763,7 @@ class HardwareResource(object):
     def __init__(self, handle):
         self._handle = handle
         self._library = nisyscfg._library_singleton.get()
-        self._property_bag = nisyscfg.properties.PropertyBag(
+        self._property_accessor = nisyscfg.properties.PropertyAccessor(
             setter=self._set_property,
             getter=self._get_property,
             indexed_getter=self._get_indexed_property
