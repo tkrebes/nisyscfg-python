@@ -1,12 +1,18 @@
-import collections
 import ctypes
 import nisyscfg.errors
+import typing
 
 from nisyscfg._lib import c_string_decode
 
 
-ComponentInfo = collections.namedtuple(
-    'ComponentInfo', ['id', 'version', 'title', 'type', 'details']
+ComponentInfo = typing.NamedTuple(
+    'ComponentInfo', [
+        ('id', str),
+        ('version', str),
+        ('title', str),
+        ('type', str),
+        ('details', str),
+    ]
 )
 
 
@@ -22,6 +28,8 @@ class ComponentInfoIterator(object):
         return self
 
     def __next__(self) -> ComponentInfo:
+        if not self._handle:
+            raise StopIteration()
         id = nisyscfg.types.simple_string()
         version = nisyscfg.types.simple_string()
         title = nisyscfg.types.simple_string()

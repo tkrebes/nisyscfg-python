@@ -3,6 +3,7 @@ import ctypes
 import nisyscfg
 import nisyscfg._library_singleton
 import nisyscfg.component_info
+import nisyscfg.dependency_info
 import nisyscfg.expert_info
 import nisyscfg.filter
 import nisyscfg.hardware_resource
@@ -14,7 +15,7 @@ import nisyscfg.xnet.properties
 from nisyscfg._lib import c_string_decode
 from nisyscfg._lib import c_string_encode
 
-from typing import Union
+from typing import NamedTuple, Union
 
 
 class _NoDefault(object):
@@ -517,6 +518,59 @@ class Session(object):
         """
         error_code = self._library.RemoveSoftwareFeed(self._session, c_string_encode(name))
         nisyscfg.errors.handle_error(self, error_code)
+
+    def install_all(self, auto_restart: bool = True, deselect_conflicts: bool = True):
+        """
+        Installs software on a Real-Time system.
+
+        auto_restart - Restarts the system into install mode by default before
+        the operation is performed, and restarts back to a running state after
+        the operation is complete. If you choose not to restart automatically,
+        the operation will fail if the system is not already in install mode.
+
+        deselect_conflicts - Indicates whether to deselect conflicting software
+        components automatically. Select True to deselect the conflicting
+        software components. If False, installation will fail if the system
+        has conflicting software components.
+
+        Returns tuple (installed_components, broken_dependencies)
+
+            installed_components - An iterator to get information about each
+            component that was just installed.
+
+            broken_dependencies - An iterator to get a list of broken
+            dependencies, which are specific software components that cannot
+            operate without another software component installed.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        installed_component_handle = nisyscfg.types.EnumSoftwareFeedHandle()
+        broken_dependency_handle = nisyscfg.types.EnumDependencyHandle()
+        error_code = self._library.InstallAll(
+            self._session,
+            auto_restart,
+            deselect_conflicts,
+            ctypes.pointer(installed_component_handle),
+            ctypes.pointer(broken_dependency_handle))
+        nisyscfg.errors.handle_error(self, error_code)
+
+        ReturnValue = NamedTuple(
+            "ReturnValue", [
+                ('installed_components', nisyscfg.component_info.ComponentInfoIterator),
+                ('broken_dependencies', nisyscfg.dependency_info.DependencyInfoIterator),
+            ]
+        )
+
+        result = ReturnValue(
+            installed_components=nisyscfg.component_info.ComponentInfoIterator(installed_component_handle),
+            broken_dependencies=nisyscfg.dependency_info.DependencyInfoIterator(broken_dependency_handle),
+        )
+
+        self._children.append(result.installed_components)
+        self._children.append(result.broken_dependencies)
+
+        return result
 
     def get_software_feeds(self) -> nisyscfg.software_feed.SoftwareFeedIterator:
         """

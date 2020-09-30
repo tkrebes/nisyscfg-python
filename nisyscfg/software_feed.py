@@ -21,6 +21,8 @@ class SoftwareFeedIterator(object):
         return self
 
     def __next__(self) -> SoftwareFeed:
+        if not self._handle:
+            raise StopIteration()
         name = nisyscfg.types.simple_string()
         uri = nisyscfg.types.simple_string()
         enabled = ctypes.c_int()
