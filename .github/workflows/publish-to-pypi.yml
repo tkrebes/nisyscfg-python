@@ -1,0 +1,45 @@
+name: Publish Package to PyPI
+
+on:
+  push:
+    paths:
+      - nisyscfg/VERSION
+    branches:
+      - main
+  release:
+    types:
+      - published
+
+jobs:
+  build-and-publish:
+    if: github.repository == 'tkrebes/nisyscfg-python'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install setuptools and other tools
+        run: python3 -m pip install setuptools wheel twine
+
+      - name: Build packages
+        run: python3 setup.py bdist_wheel
+
+      - name: Publish distribution to Test PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.test_pypi_password }}
+          repository_url: https://test.pypi.org/legacy/
+        continue-on-error: true
+
+      - name: Publish distribution to PyPI
+        if: github.event.action == 'published'
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
