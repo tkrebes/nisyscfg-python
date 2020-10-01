@@ -10,6 +10,7 @@ import nisyscfg.hardware_resource
 import nisyscfg.properties
 import nisyscfg.pxi.properties
 import nisyscfg.software_feed
+import nisyscfg.system_info
 import nisyscfg.xnet.properties
 
 from nisyscfg._lib import c_string_decode
@@ -212,6 +213,89 @@ class Session(object):
         iter = nisyscfg.hardware_resource.HardwareResourceIterator(self._session, resource_handle)
         self._children.append(iter)
         return iter
+
+    def find_systems(
+        self,
+        device_class: str = '',
+        detect_online_systems: bool = True,
+        cache_mode: nisyscfg.enums.IncludeCachedResults = nisyscfg.enums.IncludeCachedResults.NONE,
+        find_output_mode: nisyscfg.enums.SystemNameFormat = nisyscfg.enums.SystemNameFormat.HOSTNAME_IP,
+        timeout: float = 4.0,
+        only_installable_systems: bool = False
+    ) -> nisyscfg.system_info.SystemInfoIterator:
+        """
+        Retrieves systems on the network.
+
+        device_class - Specifies the class of device for which you are
+        searching. Common values are "PXI" and "cRIO". To specify multiple
+        classes, use a comma to separate the values.
+
+        detect_online_systems - Detects systems that are online. This option
+        checks for all local online systems by default. You must set this
+        parameter to TRUE on Real-Time targets. On Windows operating systems,
+        set this parameter to FALSE if you only want to return previously
+        detected results.
+
+        cache_mode - Specifies whether to include cached results.
+        ============== =========================================================
+        Mode           Description
+        -------------- ---------------------------------------------------------
+        NONE           Only return systems discovered from a new scan. If you
+                       have added a system on a remote subnet to MAX, using
+                       NONE for the cached input will not return that system
+                       because it cannot be detected on the local subnet.
+        ONLY_IF_ONLINE Include previously discovered systems if they are online.
+        ALL            Include all previously discovered systems (default).
+        ============== =========================================================
+
+        find_output_mode - Specifies the "preferred" output format of hostname
+        and IP addresses for systems on the network. The Initialize function
+        accepts all of these formats.
+        ============ ===========================================================
+        Mode         Description
+        ------------ -----------------------------------------------------------
+        HOSTNAME     Includes only the hostname.
+        HOSTNAME_IP  (default) Includes both the hostname and IP address.
+        HOSTNAME_MAC Includes both the hostname and MAC address.
+        IP           Includes only the IP address.
+        IP_HOSTNAME  Includes both the IP address and hostname.
+        IP_MAC       Includes both the IP address and MAC address.
+        MAC          Includes only the MAC address.
+        MAC_HOSTNAME Includes both the MAC address and hostname.
+        MAC_IP       Includes both the MAC address and the IP address.
+        ============ ===========================================================
+        Note: In some cases this parameter may return a system that is not in
+        the requested format. For example, if you request the default
+        HOSTNAME_IP but an unconfigured system is detected, that system is
+        returned as IP_MAC.
+
+        timeout - The time, in seconds, the function waits before it times out.
+        The default is 4 s. In some cases, the operation may take longer to
+        time out.
+
+        only_installable_systems - Detects only the systems that support the
+        ability to install software remotely. This includes all Real-Time
+        systems.
+
+        Returns an interator that yields the system names in the format
+        requested from the input parameter
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        system_handle = nisyscfg.types.EnumSystemHandle()
+        error_code = self._library.FindSystems(
+            self._session,
+            c_string_encode(device_class),
+            nisyscfg.enums.Bool(detect_online_systems),
+            cache_mode,
+            find_output_mode,
+            int(timeout * 1000),
+            nisyscfg.enums.Bool(only_installable_systems),
+            ctypes.pointer(system_handle))
+        nisyscfg.errors.handle_error(self, error_code)
+
+        return nisyscfg.system_info.SystemInfoIterator(system_handle)
 
     def create_filter(self) -> nisyscfg.filter.Filter:
         """
