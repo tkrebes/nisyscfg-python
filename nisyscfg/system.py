@@ -15,7 +15,7 @@ import nisyscfg.xnet.properties
 from nisyscfg._lib import c_string_decode
 from nisyscfg._lib import c_string_encode
 
-from typing import NamedTuple, Union
+from typing import List, NamedTuple, Union
 
 
 InstallAllResult = NamedTuple(
@@ -109,6 +109,7 @@ class Session(object):
             None,  # expert_enum_handle
             ctypes.pointer(self._session))
         nisyscfg.errors.handle_error(self, error_code)
+        self.target_name = target
 
     def __del__(self):
         self.close()
@@ -606,6 +607,233 @@ class Session(object):
         """
         error_code = self._library.UninstallAll(self._session, auto_restart)
         nisyscfg.errors.handle_error(self, error_code)
+
+    def _install_uninstall(
+        self,
+        components_to_install: Union[None, List[str]] = None,
+        components_to_uninstall: Union[None, List[str]] = None,
+        auto_restart: bool = True,
+        auto_select_dependencies: bool = True,
+        auto_select_recommends: bool = True,
+        item_types: nisyscfg.enums.IncludeComponentTypes = nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE,
+    ) -> nisyscfg.dependency_info.DependencyInfoIterator:
+        """
+        Allows you to install components, uninstall components, or both install
+        and uninstall components simultaneously (as long as two components do
+        not overlap each other).
+
+        components_to_install - List of software components IDs or titles to
+        install.
+
+        components_to_uninstall - List of software components IDs to remove.
+
+        auto_restart - Restarts the system into install mode by default before
+        the operation is performed, and restarts back to a running state after
+        the operation is complete. If you choose not to restart automatically,
+        the operation will fail if the system is not already in install mode.
+
+        auto_select_dependencies - Specifies whether to automatically select
+        software components that are required by the software you have
+        specified to install.
+
+        auto_select_recommends - Specifies whether to automatically select
+        recommended packages.
+
+        Returns tuple  An iterator to get a list of broken dependencies, which
+        are specific software components that cannot operate without another
+        software component installed.
+
+        item_types - Allows inclusion of hidden software installed on the target
+        when ALL_VISIBLE_AND_HIDDEN is selected. Hidden software is not listed
+        by default.
+        ====================== =================================================
+        Item Types             Description
+        ---------------------- -------------------------------------------------
+        ALL_VISIBLE            Specifies to return all visible software
+                               components. This includes all standard, startup,
+                               and essential components.
+        ALL_VISIBLE_AND_HIDDEN Specifies to return all visible and hidden
+                               software components.
+        ONLY_STANDARD          Specifies to only return standard software
+                               components.
+        ONLY_STARTUP           Specifies to only return components that are
+                               startup applications.
+        ====================== =================================================
+
+        Returns An iterator to get a list of broken dependencies, which are
+        specific software components that cannot operate without another
+        software component installed.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        software_to_install = nisyscfg.component_info.EnumSoftwareComponent()
+
+        if components_to_install:
+            for component_name in components_to_install:
+                component = self._get_latest_component(component_name, item_types)
+                software_to_install.add_component(
+                    component.id, component.version, nisyscfg.enums.VersionSelectionMode.EXACT)
+
+        if components_to_uninstall:
+            c_components_to_uninstall = (ctypes.c_char_p * len(components_to_uninstall))(
+                *map(c_string_encode, components_to_uninstall))
+        else:
+            c_components_to_uninstall = (ctypes.c_char_p * 0)()
+
+        broken_dependency_handle = nisyscfg.types.EnumDependencyHandle()
+
+        error_code = self._library.InstallUninstallComponents2(
+            self._session,
+            auto_restart,
+            auto_select_dependencies,
+            auto_select_recommends,
+            software_to_install._handle,
+            len(c_components_to_uninstall),
+            ctypes.cast(c_components_to_uninstall, ctypes.POINTER(ctypes.POINTER(ctypes.c_char))),
+            ctypes.pointer(broken_dependency_handle))
+        nisyscfg.errors.handle_error(self, error_code)
+
+        broken_dependencies = nisyscfg.dependency_info.DependencyInfoIterator(broken_dependency_handle)
+        self._children.append(broken_dependencies)
+
+        return broken_dependencies
+
+    def install(
+        self,
+        components: Union[None, List[str]] = None,
+        auto_restart: bool = True,
+        auto_select_dependencies: bool = True,
+        auto_select_recommends: bool = True,
+        item_types: nisyscfg.enums.IncludeComponentTypes = nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE,
+    ) -> nisyscfg.dependency_info.DependencyInfoIterator:
+        """
+        Allows you to install components.
+
+        components - List of software components IDs or titles to install.
+
+        auto_restart - Restarts the system into install mode by default before
+        the operation is performed, and restarts back to a running state after
+        the operation is complete. If you choose not to restart automatically,
+        the operation will fail if the system is not already in install mode.
+
+        auto_select_dependencies - Specifies whether to automatically select
+        software components that are required by the software you have
+        specified to install.
+
+        auto_select_recommends - Specifies whether to automatically select
+        recommended packages.
+
+        Returns tuple  An iterator to get a list of broken dependencies, which
+        are specific software components that cannot operate without another
+        software component installed.
+
+        item_types - Allows inclusion of hidden software installed on the target
+        when ALL_VISIBLE_AND_HIDDEN is selected. Hidden software is not listed
+        by default.
+        ====================== =================================================
+        Item Types             Description
+        ---------------------- -------------------------------------------------
+        ALL_VISIBLE            Specifies to return all visible software
+                               components. This includes all standard, startup,
+                               and essential components.
+        ALL_VISIBLE_AND_HIDDEN Specifies to return all visible and hidden
+                               software components.
+        ONLY_STANDARD          Specifies to only return standard software
+                               components.
+        ONLY_STARTUP           Specifies to only return components that are
+                               startup applications.
+        ====================== =================================================
+
+        Returns An iterator to get a list of broken dependencies, which are
+        specific software components that cannot operate without another
+        software component installed.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        return self._install_uninstall(
+            components_to_install=components,
+            auto_restart=auto_restart,
+            auto_select_dependencies=auto_select_dependencies,
+            auto_select_recommends=auto_select_recommends,
+            item_types=item_types)
+
+    def uninstall(
+        self,
+        components: Union[None, List[str]] = None,
+        auto_restart: bool = True,
+        auto_select_dependencies: bool = True,
+        auto_select_recommends: bool = True,
+        item_types: nisyscfg.enums.IncludeComponentTypes = nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE,
+    ) -> nisyscfg.dependency_info.DependencyInfoIterator:
+        """
+        Allows you to uninstall components.
+
+        components - List of software components IDs to remove.
+
+        auto_restart - Restarts the system into install mode by default before
+        the operation is performed, and restarts back to a running state after
+        the operation is complete. If you choose not to restart automatically,
+        the operation will fail if the system is not already in install mode.
+
+        auto_select_dependencies - Specifies whether to automatically select
+        software components that are required by the software you have
+        specified to install.
+
+        auto_select_recommends - Specifies whether to automatically select
+        recommended packages.
+
+        Returns tuple  An iterator to get a list of broken dependencies, which
+        are specific software components that cannot operate without another
+        software component installed.
+
+        item_types - Allows inclusion of hidden software installed on the target
+        when ALL_VISIBLE_AND_HIDDEN is selected. Hidden software is not listed
+        by default.
+        ====================== =================================================
+        Item Types             Description
+        ---------------------- -------------------------------------------------
+        ALL_VISIBLE            Specifies to return all visible software
+                               components. This includes all standard, startup,
+                               and essential components.
+        ALL_VISIBLE_AND_HIDDEN Specifies to return all visible and hidden
+                               software components.
+        ONLY_STANDARD          Specifies to only return standard software
+                               components.
+        ONLY_STARTUP           Specifies to only return components that are
+                               startup applications.
+        ====================== =================================================
+
+        Returns An iterator to get a list of broken dependencies, which are
+        specific software components that cannot operate without another
+        software component installed.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        return self._install_uninstall(
+            components_to_uninstall=components,
+            auto_restart=auto_restart,
+            auto_select_dependencies=auto_select_dependencies,
+            auto_select_recommends=auto_select_recommends,
+            item_types=item_types)
+
+    def _get_latest_component(
+        self,
+        component_name: str,
+        item_types: nisyscfg.enums.IncludeComponentTypes = nisyscfg.enums.IncludeComponentTypes.ALL_VISIBLE,
+    ) -> nisyscfg.component_info.ComponentInfo:
+        components = [
+            component
+            for component in self.get_available_software_components(item_types)
+            if (component.title == component_name) or (component.id == component_name)]
+
+        if not components:
+            raise nisyscfg.errors.Error(
+                f'Component "{component_name}" not available for install on target "{self.target_name}".')
+
+        return max(components, key=lambda comp: comp.version.split('.'))
 
     def get_software_feeds(self) -> nisyscfg.software_feed.SoftwareFeedIterator:
         """
