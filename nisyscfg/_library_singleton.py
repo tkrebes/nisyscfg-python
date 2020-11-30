@@ -24,21 +24,25 @@ class CTypesLibrary(object):
 
 _instance = None
 _instance_lock = threading.Lock()
-_library_info = {'Linux': {'64bit': {'name': 'libnisyscfg.so', 'type': 'cdll'}},
-                 'Windows': {'32bit': {'name': 'nisyscfg.dll', 'type': 'dual'},
-                             '64bit': {'name': 'nisyscfg.dll', 'type': 'cdll'}}}
+_library_info = {
+    "Linux": {"64bit": {"name": "libnisyscfg.so", "type": "cdll"}},
+    "Windows": {
+        "32bit": {"name": "nisyscfg.dll", "type": "dual"},
+        "64bit": {"name": "nisyscfg.dll", "type": "cdll"},
+    },
+}
 
 
 def _get_library_name():
     try:
-        return _library_info[platform.system()][platform.architecture()[0]]['name']
+        return _library_info[platform.system()][platform.architecture()[0]]["name"]
     except KeyError:
         raise errors.UnsupportedPlatformError
 
 
 def _get_library_type():
     try:
-        return _library_info[platform.system()][platform.architecture()[0]]['type']
+        return _library_info[platform.system()][platform.architecture()[0]]["type"]
     except KeyError:
         raise errors.UnsupportedPlatformError
 
@@ -51,12 +55,13 @@ def get():
         if _instance is None:
             try:
                 library_type = _get_library_type()
-                if library_type == 'dual':
+                if library_type == "dual":
                     ctypes_library = CTypesLibrary(
                         ctypes.CDLL(_get_library_name()),
-                        ctypes.WinDLL(_get_library_name()))
+                        ctypes.WinDLL(_get_library_name()),
+                    )
                 else:
-                    assert library_type == 'cdll'
+                    assert library_type == "cdll"
                     ctypes_library = CTypesLibrary(ctypes.CDLL(_get_library_name()))
             except OSError:
                 raise errors.LibraryNotInstalledError()

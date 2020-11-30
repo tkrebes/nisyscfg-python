@@ -99,14 +99,14 @@ class BusType(BaseEnum):
 
 
 class HasDriverType(BaseEnum):
-    UNKNOWN = - 1
+    UNKNOWN = -1
     NOT_INSTALLED = 0
     INSTALLED = 1
 
 
 class IsPresentType(BaseEnum):
-    INITIALIZING = - 2
-    UNKNOWN = - 1
+    INITIALIZING = -2
+    UNKNOWN = -1
     NOT_PRESENT = 0
     PRESENT = 1
 
@@ -217,10 +217,10 @@ class EapType(BaseEnum):
 
 
 class FirmwareStatus(BaseEnum):
-    READY_PENDING_AUTO_RESTART = - 4
-    VERIFYING_NEW_IMAGE = - 3
-    WRITING_FLASHING_NEW_IMAGE = - 2
-    UPDATE_MODE_WAITING_FOR_IMAGE = - 1
+    READY_PENDING_AUTO_RESTART = -4
+    VERIFYING_NEW_IMAGE = -3
+    WRITING_FLASHING_NEW_IMAGE = -2
+    UPDATE_MODE_WAITING_FOR_IMAGE = -1
     CORRUPT_CANNOT_RUN = 0
     NONE_INSTALLED = 1
     INSTALLED_NORMAL_OPERATION = 2
@@ -230,7 +230,7 @@ class FirmwareStatus(BaseEnum):
 
 
 class DeleteValidationMode(BaseEnum):
-    VALIDATE_BUT_DO_NOT_DELETE = - 1
+    VALIDATE_BUT_DO_NOT_DELETE = -1
     DELETE_IF_NO_DEPENDENCIES_EXIST = 0
     DELETE_ITEM_AND_ANY_DEPENDENCIES = 1
     DELETE_ITEM_BUT_KEEP_DEPENDENCIES = 2
@@ -274,4 +274,3 @@ class PropertyType(BaseEnum):
     DOUBLE = 4
     STRING = 6
     TIMESTAMP = 7
-

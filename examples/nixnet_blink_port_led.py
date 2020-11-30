@@ -16,7 +16,9 @@ def nixnet_blink_port_led(port_name, mode):
 
         try:
             # Assume only one interface will be found
-            interface = next(session.find_hardware(filter=interface_filter, expert_names='xnet'))
+            interface = next(
+                session.find_hardware(filter=interface_filter, expert_names="xnet")
+            )
         except StopIteration:
             raise PortNotFoundError('Could not find a port "{}"'.format(port_name))
 
@@ -25,14 +27,14 @@ def nixnet_blink_port_led(port_name, mode):
         interface.save_changes()
 
 
-if '__main__' == __name__:
+if "__main__" == __name__:
     if len(sys.argv) != 3:
         print("Usage: {} <port_name> on|off".format(sys.argv[0]))
         sys.exit(1)
 
     port_name = sys.argv[1]
     mode = {
-        'on': nisyscfg.xnet.enums.Blink.ENABLE,
-        'off': nisyscfg.xnet.enums.Blink.DISABLE,
+        "on": nisyscfg.xnet.enums.Blink.ENABLE,
+        "off": nisyscfg.xnet.enums.Blink.DISABLE,
     }[sys.argv[2].lower()]
     nixnet_blink_port_led(port_name, mode)

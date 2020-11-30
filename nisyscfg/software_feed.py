@@ -5,12 +5,13 @@ import typing
 from nisyscfg._lib import c_string_decode
 
 SoftwareFeed = typing.NamedTuple(
-    'SoftwareFeed', [
-        ('name', str),
-        ('uri', str),
-        ('enabled', bool),
-        ('trusted', bool),
-    ]
+    "SoftwareFeed",
+    [
+        ("name", str),
+        ("uri", str),
+        ("enabled", bool),
+        ("trusted", bool),
+    ],
 )
 
 
@@ -32,7 +33,9 @@ class SoftwareFeedIterator(object):
         uri = nisyscfg.types.simple_string()
         enabled = ctypes.c_int()
         trusted = ctypes.c_int()
-        error_code = self._library.NextSoftwareFeed(self._handle, name, uri, ctypes.pointer(enabled), ctypes.pointer(trusted))
+        error_code = self._library.NextSoftwareFeed(
+            self._handle, name, uri, ctypes.pointer(enabled), ctypes.pointer(trusted)
+        )
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)

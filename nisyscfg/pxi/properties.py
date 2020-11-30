@@ -67,14 +67,32 @@ class Resource(PropertyGroup):
 
 class IndexedResource(PropertyGroup):
     # Power supply index attributes
-    POWER_SUPPLY_NAME = IndexedStringProperty(186781696, Resource.POWER_SUPPLY_BAY_COUNT)
-    POWER_SUPPLY_STATE = IndexedUnsignedIntProperty(186789888, Resource.POWER_SUPPLY_BAY_COUNT, PowerSupplyStates)
-    POWER_SUPPLY_POWER = IndexedUnsignedIntProperty(186793984, Resource.POWER_SUPPLY_BAY_COUNT)  #: (Watts)
-    POWER_SUPPLY_POWER_READING = IndexedDoubleProperty(186822656, Resource.POWER_SUPPLY_BAY_COUNT)  #: (Watts)
-    POWER_SUPPLY_INTAKE_TEMP = IndexedDoubleProperty(186802176, Resource.POWER_SUPPLY_BAY_COUNT)  #: (degrees Celsius)
-    POWER_SUPPLY_POWER_LINE_FREQUENCY = IndexedUnsignedIntProperty(186785792, Resource.POWER_SUPPLY_BAY_COUNT)  #: (Hertz)
+    POWER_SUPPLY_NAME = IndexedStringProperty(
+        186781696, Resource.POWER_SUPPLY_BAY_COUNT
+    )
+    POWER_SUPPLY_STATE = IndexedUnsignedIntProperty(
+        186789888, Resource.POWER_SUPPLY_BAY_COUNT, PowerSupplyStates
+    )
+    POWER_SUPPLY_POWER = IndexedUnsignedIntProperty(
+        186793984, Resource.POWER_SUPPLY_BAY_COUNT
+    )  #: (Watts)
+    POWER_SUPPLY_POWER_READING = IndexedDoubleProperty(
+        186822656, Resource.POWER_SUPPLY_BAY_COUNT
+    )  #: (Watts)
+    POWER_SUPPLY_INTAKE_TEMP = IndexedDoubleProperty(
+        186802176, Resource.POWER_SUPPLY_BAY_COUNT
+    )  #: (degrees Celsius)
+    POWER_SUPPLY_POWER_LINE_FREQUENCY = IndexedUnsignedIntProperty(
+        186785792, Resource.POWER_SUPPLY_BAY_COUNT
+    )  #: (Hertz)
 
     # High Density Trigger Port index Attributes
-    TRIG_PORT_NAME = IndexedStringProperty(200290304, Resource.HIGH_DENSITY_TRIG_PORT_COUNT)
-    TRIG_PORT_STATE = IndexedUnsignedIntProperty(200294400, Resource.HIGH_DENSITY_TRIG_PORT_COUNT, PxiHighDensityTrigPortState)
-    TRIG_PORT_REMOVE_DEVICE_ALIAS = IndexedStringProperty(200298496, Resource.HIGH_DENSITY_TRIG_PORT_COUNT)
+    TRIG_PORT_NAME = IndexedStringProperty(
+        200290304, Resource.HIGH_DENSITY_TRIG_PORT_COUNT
+    )
+    TRIG_PORT_STATE = IndexedUnsignedIntProperty(
+        200294400, Resource.HIGH_DENSITY_TRIG_PORT_COUNT, PxiHighDensityTrigPortState
+    )
+    TRIG_PORT_REMOVE_DEVICE_ALIAS = IndexedStringProperty(
+        200298496, Resource.HIGH_DENSITY_TRIG_PORT_COUNT
+    )

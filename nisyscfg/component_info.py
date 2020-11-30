@@ -8,13 +8,14 @@ from nisyscfg._lib import c_string_encode
 
 
 ComponentInfo = typing.NamedTuple(
-    'ComponentInfo', [
-        ('id', str),
-        ('version', str),
-        ('title', str),
-        ('type', str),
-        ('details', str),
-    ]
+    "ComponentInfo",
+    [
+        ("id", str),
+        ("version", str),
+        ("title", str),
+        ("type", str),
+        ("details", str),
+    ],
 )
 
 
@@ -37,7 +38,9 @@ class ComponentInfoIterator(object):
         title = nisyscfg.types.simple_string()
         item_type = nisyscfg.types.ctypes.c_long()
         c_details = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.NextComponentInfo(self._handle, id, version, title, ctypes.pointer(item_type), c_details)
+        error_code = self._library.NextComponentInfo(
+            self._handle, id, version, title, ctypes.pointer(item_type), c_details
+        )
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
@@ -83,8 +86,8 @@ class EnumSoftwareComponent(object):
     def add_component(
         self,
         id: str,
-        version: str = '',
-        mode: nisyscfg.enums.VersionSelectionMode = nisyscfg.enums.VersionSelectionMode.HIGHEST
+        version: str = "",
+        mode: nisyscfg.enums.VersionSelectionMode = nisyscfg.enums.VersionSelectionMode.HIGHEST,
     ) -> None:
         """
         Adds a software component
@@ -100,8 +103,6 @@ class EnumSoftwareComponent(object):
         Raises an nisyscfg.errors.LibraryError exception in the event of an error.
         """
         error_code = self._library.AddComponentToEnum(
-            self._handle,
-            c_string_encode(id),
-            c_string_encode(version),
-            mode)
+            self._handle, c_string_encode(id), c_string_encode(version), mode
+        )
         nisyscfg.errors.handle_error(self, error_code)

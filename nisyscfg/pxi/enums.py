@@ -4,7 +4,9 @@ from nisyscfg.enums import BaseEnum
 class Clock10Sources(BaseEnum):
     UNKNOWN = -1  #: Not applicable, or not software-readable
     INTERNAL = 0  #: Internal Oscillator
-    BUILT_IN_CONNECTOR = 1  #: Supplied by the dedicated 10 MHz REF IN connector (e.g. SMA or SMB)
+    BUILT_IN_CONNECTOR = (
+        1  #: Supplied by the dedicated 10 MHz REF IN connector (e.g. SMA or SMB)
+    )
     TIMING_MODULE = 2  #: System Timing Module
     TRIG_10MHZ_PORT0 = 3  #: TRIG / 10 MHz Port 0 / REF IN
 
@@ -24,8 +26,12 @@ class InternalOscillators(BaseEnum):
 class PxiHighDensityTrigPortState(BaseEnum):
     DISCONNECTED = 0  #: The port is disconnected
     CONNECTED = 1  #: The port is connected to another device known to this host
-    CONNECTED_UNKNOWN = 2  #: The port is connected, but the remote device cannot be found
-    LOOPBACK = 3  #: 2 High Density Trigger ports on the device are connected to each other
+    CONNECTED_UNKNOWN = (
+        2  #: The port is connected, but the remote device cannot be found
+    )
+    LOOPBACK = (
+        3  #: 2 High Density Trigger ports on the device are connected to each other
+    )
 
 
 class FanModes(BaseEnum):
@@ -41,10 +47,12 @@ class CoolingProfiles(BaseEnum):
 
 
 class CoolingProfileSource(BaseEnum):
-    UNKNOWN = -1,  #: Not software-readable
-    USER_SPECIFIED = 1,  #: The cooling profile reflects the user configured value
-    MODULE_REQUEST = 2,  #: A module is requesting the current cooling profile
-    USER_OVERRIDE_OF_MODULE_REQUEST = 3  #: The user is overriding the cooling profile requested by a module
+    UNKNOWN = (-1,)  #: Not software-readable
+    USER_SPECIFIED = (1,)  #: The cooling profile reflects the user configured value
+    MODULE_REQUEST = (2,)  #: A module is requesting the current cooling profile
+    USER_OVERRIDE_OF_MODULE_REQUEST = (
+        3  #: The user is overriding the cooling profile requested by a module
+    )
 
 
 class PowerSupplyStates(BaseEnum):

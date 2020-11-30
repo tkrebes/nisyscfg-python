@@ -17,4 +17,3 @@ FilterHandle = ctypes.c_void_p
 EnumExpertHandle = ctypes.c_void_p
 EnumSystemHandle = ctypes.c_void_p
 EnumSoftwareSetHandle = ctypes.c_void_p
-

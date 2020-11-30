@@ -27,7 +27,7 @@ from typing import List, Union
 
 class PropertyAccessor(object):
 
-    __slots__ = '_getter', '_setter', '_indexed_getter'
+    __slots__ = "_getter", "_setter", "_indexed_getter"
 
     def __init__(self, setter=None, getter=None, indexed_getter=None):
         self._setter = setter
@@ -91,7 +91,7 @@ class PropertyAccessor(object):
 
 class TypeProperty(object):
 
-    __slots__ = '_id', '_enum', '_readable', '_writeable'
+    __slots__ = "_id", "_enum", "_readable", "_writeable"
 
     def __init__(self, id, enum=None, *, readable: bool = True, writeable: bool = True):
         self._id = id
@@ -201,14 +201,14 @@ class IndexedPropertyItems(object):
         raise KeyError(key)
 
     def __len__(self):
-        if not hasattr(self, '_len'):
+        if not hasattr(self, "_len"):
             self._len = self._tag.count_property.get(self._accessor)
         return self._len
 
     def __iter__(self):
         class IndexedPropertyItemsIter(object):
 
-            __slots__ = '_properties', '_index'
+            __slots__ = "_properties", "_index"
 
             def __init__(self, properties):
                 self._properties = properties
@@ -228,9 +228,17 @@ class IndexedPropertyItems(object):
 
 class IndexedProperty(TypeProperty):
 
-    __slots__ = ('_count_property', )
+    __slots__ = ("_count_property",)
 
-    def __init__(self, id, count_property, enum=None, *, readable: bool = True, writeable: bool = True):
+    def __init__(
+        self,
+        id,
+        count_property,
+        enum=None,
+        *,
+        readable: bool = True,
+        writeable: bool = True
+    ):
         self._id = id
         self._count_property = count_property
         self._enum = enum
@@ -412,15 +420,33 @@ class Resource(PropertyGroup):
 
 
 class IndexedResource(PropertyGroup):
-    SERVICE_TYPE = IndexedIntProperty(17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType)
-    AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS)
-    WLAN_AVAILABLE_SSID = IndexedStringProperty(219336704, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS)
-    WLAN_AVAILABLE_BSSID = IndexedStringProperty(219443200, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS)
-    WLAN_AVAILABLE_CONNECTION_TYPE = IndexedIntProperty(219340800, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS, enum=ConnectionType)
-    WLAN_AVAILABLE_SECURITY_TYPE = IndexedIntProperty(219344896, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS, enum=SecurityType)
-    WLAN_AVAILABLE_LINK_QUALITY = IndexedUnsignedIntProperty(219353088, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS)
-    WLAN_AVAILABLE_CHANNEL_NUMBER = IndexedUnsignedIntProperty(219357184, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS)
-    WLAN_AVAILABLE_LINK_SPEED = IndexedIntProperty(219361280, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS, enum=LinkSpeed)
+    SERVICE_TYPE = IndexedIntProperty(
+        17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType
+    )
+    AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(
+        17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS
+    )
+    WLAN_AVAILABLE_SSID = IndexedStringProperty(
+        219336704, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS
+    )
+    WLAN_AVAILABLE_BSSID = IndexedStringProperty(
+        219443200, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS
+    )
+    WLAN_AVAILABLE_CONNECTION_TYPE = IndexedIntProperty(
+        219340800, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS, enum=ConnectionType
+    )
+    WLAN_AVAILABLE_SECURITY_TYPE = IndexedIntProperty(
+        219344896, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS, enum=SecurityType
+    )
+    WLAN_AVAILABLE_LINK_QUALITY = IndexedUnsignedIntProperty(
+        219353088, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS
+    )
+    WLAN_AVAILABLE_CHANNEL_NUMBER = IndexedUnsignedIntProperty(
+        219357184, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS
+    )
+    WLAN_AVAILABLE_LINK_SPEED = IndexedIntProperty(
+        219361280, Resource.NUMBER_OF_DISCOVERED_ACCESS_POINTS, enum=LinkSpeed
+    )
     CPU_TOTAL_LOAD = IndexedUnsignedIntProperty(17141760, Resource.NUMBER_OF_CPUS)
     CPU_INTERRUPT_LOAD = IndexedUnsignedIntProperty(17145856, Resource.NUMBER_OF_CPUS)
     CPU_SPEED = IndexedUnsignedIntProperty(17309696, Resource.NUMBER_OF_CPUS)
@@ -428,20 +454,44 @@ class IndexedResource(PropertyGroup):
     FAN_READING = IndexedUnsignedIntProperty(17182720, Resource.NUMBER_OF_FANS)
     POWER_NAME = IndexedStringProperty(17453056, Resource.NUMBER_OF_POWER_SENSORS)
     POWER_READING = IndexedDoubleProperty(17457152, Resource.NUMBER_OF_POWER_SENSORS)
-    POWER_UPPER_CRITICAL = IndexedDoubleProperty(17461248, Resource.NUMBER_OF_POWER_SENSORS)
-    TEMPERATURE_NAME = IndexedStringProperty(17190912, Resource.NUMBER_OF_TEMPERATURE_SENSORS)
-    TEMPERATURE_READING = IndexedDoubleProperty(16965632, Resource.NUMBER_OF_TEMPERATURE_SENSORS)
-    TEMPERATURE_LOWER_CRITICAL = IndexedDoubleProperty(17195008, Resource.NUMBER_OF_TEMPERATURE_SENSORS)
-    TEMPERATURE_UPPER_CRITICAL = IndexedDoubleProperty(17199104, Resource.NUMBER_OF_TEMPERATURE_SENSORS)
+    POWER_UPPER_CRITICAL = IndexedDoubleProperty(
+        17461248, Resource.NUMBER_OF_POWER_SENSORS
+    )
+    TEMPERATURE_NAME = IndexedStringProperty(
+        17190912, Resource.NUMBER_OF_TEMPERATURE_SENSORS
+    )
+    TEMPERATURE_READING = IndexedDoubleProperty(
+        16965632, Resource.NUMBER_OF_TEMPERATURE_SENSORS
+    )
+    TEMPERATURE_LOWER_CRITICAL = IndexedDoubleProperty(
+        17195008, Resource.NUMBER_OF_TEMPERATURE_SENSORS
+    )
+    TEMPERATURE_UPPER_CRITICAL = IndexedDoubleProperty(
+        17199104, Resource.NUMBER_OF_TEMPERATURE_SENSORS
+    )
     VOLTAGE_NAME = IndexedStringProperty(17154048, Resource.NUMBER_OF_VOLTAGE_SENSORS)
-    VOLTAGE_READING = IndexedDoubleProperty(17158144, Resource.NUMBER_OF_VOLTAGE_SENSORS)
-    VOLTAGE_NOMINAL = IndexedDoubleProperty(17162240, Resource.NUMBER_OF_VOLTAGE_SENSORS)
-    VOLTAGE_LOWER_CRITICAL = IndexedDoubleProperty(17166336, Resource.NUMBER_OF_VOLTAGE_SENSORS)
-    VOLTAGE_UPPER_CRITICAL = IndexedDoubleProperty(17170432, Resource.NUMBER_OF_VOLTAGE_SENSORS)
-    USER_LED_NAME = IndexedStringProperty(17285120, Resource.NUMBER_OF_USER_LED_INDICATORS)
+    VOLTAGE_READING = IndexedDoubleProperty(
+        17158144, Resource.NUMBER_OF_VOLTAGE_SENSORS
+    )
+    VOLTAGE_NOMINAL = IndexedDoubleProperty(
+        17162240, Resource.NUMBER_OF_VOLTAGE_SENSORS
+    )
+    VOLTAGE_LOWER_CRITICAL = IndexedDoubleProperty(
+        17166336, Resource.NUMBER_OF_VOLTAGE_SENSORS
+    )
+    VOLTAGE_UPPER_CRITICAL = IndexedDoubleProperty(
+        17170432, Resource.NUMBER_OF_VOLTAGE_SENSORS
+    )
+    USER_LED_NAME = IndexedStringProperty(
+        17285120, Resource.NUMBER_OF_USER_LED_INDICATORS
+    )
     USER_SWITCH_NAME = IndexedStringProperty(17297408, Resource.NUMBER_OF_USER_SWITCHES)
-    USER_SWITCH_STATE = IndexedIntProperty(17301504, Resource.NUMBER_OF_USER_SWITCHES, enum=SwitchState)
-    USER_LED_STATE = IndexedIntProperty(17289216, Resource.NUMBER_OF_USER_LED_INDICATORS, enum=LedState)
+    USER_SWITCH_STATE = IndexedIntProperty(
+        17301504, Resource.NUMBER_OF_USER_SWITCHES, enum=SwitchState
+    )
+    USER_LED_STATE = IndexedIntProperty(
+        17289216, Resource.NUMBER_OF_USER_LED_INDICATORS, enum=LedState
+    )
     EXPERT_NAME = IndexedStringProperty(16900096, Resource.NUMBER_OF_EXPERTS)
     EXPERT_RESOURCE_NAME = IndexedStringProperty(16896000, Resource.NUMBER_OF_EXPERTS)
     EXPERT_USER_ALIAS = IndexedStringProperty(16904192, Resource.NUMBER_OF_EXPERTS)
@@ -518,7 +568,7 @@ class Filter(PropertyGroup):
 
 class Property(object):
 
-    __slots__ = ('_type_property', )
+    __slots__ = ("_type_property",)
 
     def __init__(self, type_property: TypeProperty):
         self._type_property = type_property
@@ -534,11 +584,11 @@ class Property(object):
 
 
 class Expert(object):
-
     def __init__(self, *property_groups: List[PropertyGroup]):
         class _ExpertPropertyBag(object):
             def __init__(self, property_bag):
                 self._property_accessor = property_bag
+
         self._expert = PropertyBag(*property_groups)(_ExpertPropertyBag)
 
     def __get__(self, instance, cls):
@@ -552,8 +602,9 @@ class Expert(object):
 
 
 class PropertyBag(object):
-
-    def __init__(self, *property_groups: List[PropertyGroup], expert: Union[None, str] = None):
+    def __init__(
+        self, *property_groups: List[PropertyGroup], expert: Union[None, str] = None
+    ):
         self._property_groups = property_groups
         self._expert = expert
 

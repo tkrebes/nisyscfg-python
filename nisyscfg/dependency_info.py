@@ -7,10 +7,11 @@ import typing
 from nisyscfg._lib import c_string_decode
 
 DependencyInfo = typing.NamedTuple(
-    'DependencyInfo', [
-        ('depender', nisyscfg.component_info.ComponentInfo),
-        ('dependee', nisyscfg.component_info.ComponentInfo)
-    ]
+    "DependencyInfo",
+    [
+        ("depender", nisyscfg.component_info.ComponentInfo),
+        ("dependee", nisyscfg.component_info.ComponentInfo),
+    ],
 )
 
 
@@ -47,26 +48,33 @@ class DependencyInfoIterator(object):
             dependee_id,
             dependee_version,
             dependee_title,
-            ctypes.pointer(c_dependee_detailed_description))
+            ctypes.pointer(c_dependee_detailed_description),
+        )
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
 
         if c_depender_detailed_description:
             depender_detailed_description = c_string_decode(
-                ctypes.cast(c_depender_detailed_description, ctypes.c_char_p).value)
-            error_code = self._library.FreeDetailedString(c_depender_detailed_description)
+                ctypes.cast(c_depender_detailed_description, ctypes.c_char_p).value
+            )
+            error_code = self._library.FreeDetailedString(
+                c_depender_detailed_description
+            )
             nisyscfg.errors.handle_error(self, error_code)
         else:
-            depender_detailed_description = ''
+            depender_detailed_description = ""
 
         if c_dependee_detailed_description:
             dependee_detailed_description = c_string_decode(
-                ctypes.cast(c_dependee_detailed_description, ctypes.c_char_p).value)
-            error_code = self._library.FreeDetailedString(c_dependee_detailed_description)
+                ctypes.cast(c_dependee_detailed_description, ctypes.c_char_p).value
+            )
+            error_code = self._library.FreeDetailedString(
+                c_dependee_detailed_description
+            )
             nisyscfg.errors.handle_error(self, error_code)
         else:
-            dependee_detailed_description = ''
+            dependee_detailed_description = ""
 
         return DependencyInfo(
             depender=nisyscfg.component_info.ComponentInfo(
@@ -74,15 +82,15 @@ class DependencyInfoIterator(object):
                 version=c_string_decode(depender_version),
                 title=c_string_decode(depender_title),
                 type=nisyscfg.enums.ComponentType.UNKNOWN,
-                details=depender_detailed_description
+                details=depender_detailed_description,
             ),
             dependee=nisyscfg.component_info.ComponentInfo(
                 id=c_string_decode(dependee_id),
                 version=c_string_decode(dependee_version),
                 title=c_string_decode(dependee_title),
                 type=nisyscfg.enums.ComponentType.UNKNOWN,
-                details=dependee_detailed_description
-            )
+                details=dependee_detailed_description,
+            ),
         )
 
     def close(self) -> None:

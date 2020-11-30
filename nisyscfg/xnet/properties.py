@@ -27,7 +27,9 @@ class Resource(PropertyGroup):
     PORT_NUMBER = UnsignedIntProperty(167845888)
     PROTOCOL = UnsignedIntProperty(167796737, Protocol)
     CAN_TERMINATION_CAPABILITY = UnsignedIntProperty(167849984, Bool)
-    CAN_TRANSCEIVER_CAPABILITY = UnsignedIntProperty(167792641, CanTransceiverCapability)
+    CAN_TRANSCEIVER_CAPABILITY = UnsignedIntProperty(
+        167792641, CanTransceiverCapability
+    )
     DONGLE_ID = UnsignedIntProperty(167813120, DongleId)
     DONGLE_STATE = UnsignedIntProperty(167809024, DongleState)
 
@@ -57,7 +59,9 @@ class Filter(PropertyGroup):
     PORT_NUMBER = UnsignedIntProperty(167845888)
     PROTOCOL = UnsignedIntProperty(167796737, Protocol)
     CAN_TERMINATION_CAPABILITY = UnsignedIntProperty(167849984, Bool)
-    CAN_TRANSCEIVER_CAPABILITY = UnsignedIntProperty(167792641, CanTransceiverCapability)
+    CAN_TRANSCEIVER_CAPABILITY = UnsignedIntProperty(
+        167792641, CanTransceiverCapability
+    )
     DONGLE_ID = UnsignedIntProperty(167813120, DongleId)
 
     # Write-only Automotive Ethernet port properties

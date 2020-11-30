@@ -7,15 +7,15 @@ from nisyscfg.enums import BaseEnum
 
 
 def _is_success(code):
-    return (code == 0)
+    return code == 0
 
 
 def _is_error(code):
-    return (code < 0)
+    return code < 0
 
 
 def _is_warning(code):
-    return (code > 0)
+    return code > 0
 
 
 class Error(Exception):
@@ -25,7 +25,7 @@ class Error(Exception):
 
 class LibraryError(Error):
     def __init__(self, code, description):
-        assert (_is_error(code)), "Should not raise Error if code is not fatal."
+        assert _is_error(code), "Should not raise Error if code is not fatal."
         self.code = code
         self.description = description
         if self.description:
@@ -37,22 +37,29 @@ class LibraryError(Error):
 
 class LibraryWarning(Warning):
     def __init__(self, code, description):
-        assert (_is_warning(code)), "Should not create Warning if code is not positive."
+        assert _is_warning(code), "Should not create Warning if code is not positive."
         if self.description:
-            message = 'Warning {0} occurred.\n{1}'.format(str(code), description)
+            message = "Warning {0} occurred.\n{1}".format(str(code), description)
         else:
-            message = 'Warning {0} occurred.'.format(str(code))
+            message = "Warning {0} occurred.".format(str(code))
         super(LibraryWarning, self).__init__(message)
 
 
 class UnsupportedPlatformError(Error):
     def __init__(self):
-        super(UnsupportedPlatformError, self).__init__('Platform is unsupported: ' + platform.architecture()[0] + ' ' + platform.system())
+        super(UnsupportedPlatformError, self).__init__(
+            "Platform is unsupported: "
+            + platform.architecture()[0]
+            + " "
+            + platform.system()
+        )
 
 
 class LibraryNotInstalledError(Error):
     def __init__(self):
-        super(LibraryNotInstalledError, self).__init__('The NI System Configuration runtime could not be loaded. Make sure it is installed and its bitness matches that of your Python interpreter. Please visit http://www.ni.com/downloads/drivers/ to download and install it.')
+        super(LibraryNotInstalledError, self).__init__(
+            "The NI System Configuration runtime could not be loaded. Make sure it is installed and its bitness matches that of your Python interpreter. Please visit http://www.ni.com/downloads/drivers/ to download and install it."
+        )
 
 
 def handle_error(session, code, ignore_warnings=False, is_error_handling=False):
@@ -65,12 +72,12 @@ def handle_error(session, code, ignore_warnings=False, is_error_handling=False):
         if is_error_handling:
             # The caller is in the midst of error handling and an error occurred.
             # Don't try to get the description or we'll start recursing until the stack overflows.
-            description = ''
+            description = ""
         else:
             description = session._get_status_description(code)
     except Exception:
         status = code
-        description = ''
+        description = ""
 
     if _is_error(code):
         raise LibraryError(status, description)
@@ -272,4 +279,3 @@ class Status(BaseEnum):
     UNSUPPORTED_OS = -2147220280
     EXACT_VERSION_REQUIRED = -2147220279
     INVALID_STARTUP = -2147220277
-

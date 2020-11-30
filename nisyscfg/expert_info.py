@@ -5,11 +5,12 @@ from nisyscfg._lib import c_string_decode
 
 
 ExpertInfo = typing.NamedTuple(
-    'ExpertInfo', [
-        ('expert_name', str),
-        ('display_name', str),
-        ('version', str),
-    ]
+    "ExpertInfo",
+    [
+        ("expert_name", str),
+        ("display_name", str),
+        ("version", str),
+    ],
 )
 
 
@@ -31,14 +32,16 @@ class ExpertInfoIterator(object):
         expert_name = nisyscfg.types.simple_string()
         display_name = nisyscfg.types.simple_string()
         version = nisyscfg.types.simple_string()
-        error_code = self._library.NextExpertInfo(self._handle, expert_name, display_name, version)
+        error_code = self._library.NextExpertInfo(
+            self._handle, expert_name, display_name, version
+        )
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
         return ExpertInfo(
             c_string_decode(expert_name.value),
             c_string_decode(display_name.value),
-            c_string_decode(version.value)
+            c_string_decode(version.value),
         )
 
     def close(self) -> None:

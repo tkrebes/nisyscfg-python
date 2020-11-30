@@ -7,12 +7,14 @@ from nisyscfg._lib import c_string_encode
 
 
 @nisyscfg.properties.PropertyBag(nisyscfg.properties.Filter)
-@nisyscfg.properties.PropertyBag(nisyscfg.xnet.properties.Filter, expert='xnet')
+@nisyscfg.properties.PropertyBag(nisyscfg.xnet.properties.Filter, expert="xnet")
 class Filter(object):
     def __init__(self, session):
         self._handle = nisyscfg.types.FilterHandle()
         self._library = nisyscfg._library_singleton.get()
-        self._property_accessor = nisyscfg.properties.PropertyAccessor(setter=self._set_property_with_type)
+        self._property_accessor = nisyscfg.properties.PropertyAccessor(
+            setter=self._set_property_with_type
+        )
         error_code = self._library.CreateFilter(session, ctypes.pointer(self._handle))
         nisyscfg.errors.handle_error(self, error_code)
 
@@ -33,5 +35,7 @@ class Filter(object):
         else:
             value = c_type(value)
 
-        error_code = self._library.SetFilterPropertyWithType(self._handle, id, nisyscfg_type, value)
+        error_code = self._library.SetFilterPropertyWithType(
+            self._handle, id, nisyscfg_type, value
+        )
         nisyscfg.errors.handle_error(self, error_code)

@@ -5,18 +5,16 @@ import six
 import sys
 
 
-if sys.platform.startswith('win'):
+if sys.platform.startswith("win"):
     # On Windows, nisyscfg uses the system code page for the decoding of C-strings
     def get_syscfg_locale():
-        return (
-            locale.getlocale()[1]
-            or locale.getdefaultlocale()[1]
-            or 'ascii'
-        )
+        return locale.getlocale()[1] or locale.getdefaultlocale()[1] or "ascii"
+
+
 else:
     # On other OSes, nisyscfg uses ISO-8859-1 (Latin1) for the decoding of C-strings
     def get_syscfg_locale():
-        return 'ISO-8859-1'
+        return "ISO-8859-1"
 
 
 def c_string_encode(value):

@@ -14,32 +14,36 @@ class _NoDefault(object):
 
 
 SaveChangesResult = typing.NamedTuple(
-    'SaveChangesResult', [
-        ('restart_required', bool),
-        ('details', str),
-    ]
+    "SaveChangesResult",
+    [
+        ("restart_required", bool),
+        ("details", str),
+    ],
 )
 
 UpgradeFirmwareResult = typing.NamedTuple(
-    'UpgradeFirmwareResult', [
-        ('status', nisyscfg.enums.FirmwareStatus),
-        ('details', str),
-    ]
+    "UpgradeFirmwareResult",
+    [
+        ("status", nisyscfg.enums.FirmwareStatus),
+        ("details", str),
+    ],
 )
 
 FirmwareStatusResult = typing.NamedTuple(
-    'FirmwareStatusResult', [
-        ('percent_complete', int),
-        ('status', nisyscfg.enums.FirmwareStatus),
-        ('details', str),
-    ]
+    "FirmwareStatusResult",
+    [
+        ("percent_complete", int),
+        ("status", nisyscfg.enums.FirmwareStatus),
+        ("details", str),
+    ],
 )
 
 DeleteResult = typing.NamedTuple(
-    'DeleteResult', [
-        ('dependent_items_deleted', bool),
-        ('details', str),
-    ]
+    "DeleteResult",
+    [
+        ("dependent_items_deleted", bool),
+        ("details", str),
+    ],
 )
 
 
@@ -61,7 +65,9 @@ class HardwareResourceIterator(object):
             # TODO(tkrebes): raise RuntimeError
             raise StopIteration()
         resource_handle = nisyscfg.types.ResourceHandle()
-        error_code = self._library.NextResource(self._session, self._handle, ctypes.pointer(resource_handle))
+        error_code = self._library.NextResource(
+            self._session, self._handle, ctypes.pointer(resource_handle)
+        )
         if error_code == 1:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
@@ -79,9 +85,15 @@ class HardwareResourceIterator(object):
             self._handle = None
 
 
-@nisyscfg.properties.PropertyBag(nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource)
-@nisyscfg.properties.PropertyBag(nisyscfg.pxi.properties.Resource, nisyscfg.pxi.properties.IndexedResource, expert='pxi')
-@nisyscfg.properties.PropertyBag(nisyscfg.xnet.properties.Resource, expert='xnet')
+@nisyscfg.properties.PropertyBag(
+    nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource
+)
+@nisyscfg.properties.PropertyBag(
+    nisyscfg.pxi.properties.Resource,
+    nisyscfg.pxi.properties.IndexedResource,
+    expert="pxi",
+)
+@nisyscfg.properties.PropertyBag(nisyscfg.xnet.properties.Resource, expert="xnet")
 class HardwareResource(object):
     def __init__(self, handle):
         self._handle = handle
@@ -89,14 +101,14 @@ class HardwareResource(object):
         self._property_accessor = nisyscfg.properties.PropertyAccessor(
             setter=self._set_property,
             getter=self._get_property,
-            indexed_getter=self._get_indexed_property
+            indexed_getter=self._get_indexed_property,
         )
 
     def __del__(self):
         self.close()
 
     def __repr__(self):
-        return 'HardwareResource(name={})'.format(self.name)
+        return "HardwareResource(name={})".format(self.name)
 
     @property
     def name(self):
@@ -151,7 +163,9 @@ class HardwareResource(object):
             value = c_type()
             value_arg = ctypes.pointer(value)
 
-        error_code = self._library.GetResourceIndexedProperty(self._handle, id, index, value_arg)
+        error_code = self._library.GetResourceIndexedProperty(
+            self._handle, id, index, value_arg
+        )
         nisyscfg.errors.handle_error(self, error_code)
 
         if issubclass(c_type, nisyscfg.enums.BaseEnum):
@@ -170,7 +184,9 @@ class HardwareResource(object):
         try:
             return self[tag]
         except nisyscfg.errors.LibraryError as err:
-            if err.code != nisyscfg.errors.Status.PROP_DOES_NOT_EXIST or isinstance(default, _NoDefault):
+            if err.code != nisyscfg.errors.Status.PROP_DOES_NOT_EXIST or isinstance(
+                default, _NoDefault
+            ):
                 raise
             return default
 
@@ -222,14 +238,14 @@ class HardwareResource(object):
             overwrite_conflict,
             update_dependencies,
             ctypes.pointer(name_already_existed),
-            ctypes.pointer(overwritten_resource_handle))
+            ctypes.pointer(overwritten_resource_handle),
+        )
         nisyscfg.errors.handle_error(self, error_code)
 
         # TODO(tkrebes): Ensure lifetime of HardwareResource does not exceed the
         # session.
-        overwritten_resource = (
-            overwritten_resource_handle.value
-            and HardwareResource(overwritten_resource_handle)
+        overwritten_resource = overwritten_resource_handle.value and HardwareResource(
+            overwritten_resource_handle
         )
 
         # Do not return the bool 'name_already_existed' since it is equivalent
@@ -263,7 +279,9 @@ class HardwareResource(object):
         """
         restart_required = ctypes.c_int()
         c_details = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.SaveResourceChanges(self._handle, restart_required, ctypes.pointer(c_details))
+        error_code = self._library.SaveResourceChanges(
+            self._handle, restart_required, ctypes.pointer(c_details)
+        )
         if c_details:
             details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
             error_code_2 = self._library.FreeDetailedString(c_details)
@@ -271,8 +289,7 @@ class HardwareResource(object):
         nisyscfg.errors.handle_error(self, error_code_2)
 
         return SaveChangesResult(
-            restart_required=restart_required.value != 0,
-            details=details
+            restart_required=restart_required.value != 0, details=details
         )
 
     def self_test(self, mode=0):
@@ -293,7 +310,9 @@ class HardwareResource(object):
         error.
         """
         c_details = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.SelfTestHardware(self._handle, mode, ctypes.pointer(c_details))
+        error_code = self._library.SelfTestHardware(
+            self._handle, mode, ctypes.pointer(c_details)
+        )
         if c_details:
             details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
             error_code_2 = self._library.FreeDetailedString(c_details)
@@ -308,7 +327,7 @@ class HardwareResource(object):
         filepath: str = None,
         auto_stop_task: bool = True,
         force: bool = False,
-        sync_call: bool = True
+        sync_call: bool = True,
     ) -> UpgradeFirmwareResult:
         """
         Updates the firmware on the target.
@@ -361,14 +380,28 @@ class HardwareResource(object):
         c_details = ctypes.POINTER(ctypes.c_char)()
         if version:
             error_code = self._library.UpgradeFirmwareVersion(
-                self._handle, c_string_encode(version), auto_stop_task, force, sync_call,
-                ctypes.pointer(firmware_status), ctypes.pointer(c_details))
+                self._handle,
+                c_string_encode(version),
+                auto_stop_task,
+                force,
+                sync_call,
+                ctypes.pointer(firmware_status),
+                ctypes.pointer(c_details),
+            )
         elif filepath:
             error_code = self._library.UpgradeFirmwareFromFile(
-                self._handle, c_string_encode(filepath), auto_stop_task, force, sync_call,
-                ctypes.pointer(firmware_status), ctypes.pointer(c_details))
+                self._handle,
+                c_string_encode(filepath),
+                auto_stop_task,
+                force,
+                sync_call,
+                ctypes.pointer(firmware_status),
+                ctypes.pointer(c_details),
+            )
         else:
-            raise ValueError("upgrade_firmware() requires either version or filepath to be specified")
+            raise ValueError(
+                "upgrade_firmware() requires either version or filepath to be specified"
+            )
 
         if c_details:
             details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
@@ -377,8 +410,7 @@ class HardwareResource(object):
         nisyscfg.errors.handle_error(self, error_code_2)
 
         return UpgradeFirmwareResult(
-            status=nisyscfg.enums.FirmwareStatus(firmware_status.value),
-            details=details
+            status=nisyscfg.enums.FirmwareStatus(firmware_status.value), details=details
         )
 
     @property
@@ -408,7 +440,8 @@ class HardwareResource(object):
         firmware_status = ctypes.c_int()
         c_details = ctypes.POINTER(ctypes.c_char)()
         error_code = self._library.CheckFirmwareStatus(
-            self._handle, percent_complete, firmware_status, ctypes.pointer(c_details))
+            self._handle, percent_complete, firmware_status, ctypes.pointer(c_details)
+        )
         if c_details:
             details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
             error_code_2 = self._library.FreeDetailedString(c_details)
@@ -421,7 +454,9 @@ class HardwareResource(object):
             details=details,
         )
 
-    def delete(self, mode=nisyscfg.enums.DeleteValidationMode.DELETE_IF_NO_DEPENDENCIES_EXIST):
+    def delete(
+        self, mode=nisyscfg.enums.DeleteValidationMode.DELETE_IF_NO_DEPENDENCIES_EXIST
+    ):
         """
         Permanently removes a hardware resource and its configuration data from
         the system.
@@ -461,7 +496,8 @@ class HardwareResource(object):
         dependent_items_deleted = ctypes.c_int()
         c_details = ctypes.POINTER(ctypes.c_char)()
         error_code = self._library.DeleteResource(
-            self._handle, mode, dependent_items_deleted, ctypes.pointer(c_details))
+            self._handle, mode, dependent_items_deleted, ctypes.pointer(c_details)
+        )
         if c_details:
             details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
             error_code_2 = self._library.FreeDetailedString(c_details)
@@ -469,6 +505,5 @@ class HardwareResource(object):
         nisyscfg.errors.handle_error(self, error_code_2)
 
         return DeleteResult(
-            dependent_items_deleted=dependent_items_deleted.value != 0,
-            details=details
+            dependent_items_deleted=dependent_items_deleted.value != 0, details=details
         )
