@@ -50,7 +50,7 @@ class DependencyInfoIterator(object):
             dependee_title,
             ctypes.pointer(c_dependee_detailed_description),
         )
-        if error_code == 1:
+        if error_code == nisyscfg.errors.Status.END_OF_ENUM:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
 

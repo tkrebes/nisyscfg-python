@@ -41,7 +41,7 @@ class ComponentInfoIterator(object):
         error_code = self._library.NextComponentInfo(
             self._handle, id, version, title, ctypes.pointer(item_type), c_details
         )
-        if error_code == 1:
+        if error_code == nisyscfg.errors.Status.END_OF_ENUM:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
 

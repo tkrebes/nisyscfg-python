@@ -36,7 +36,7 @@ class SoftwareFeedIterator(object):
         error_code = self._library.NextSoftwareFeed(
             self._handle, name, uri, ctypes.pointer(enabled), ctypes.pointer(trusted)
         )
-        if error_code == 1:
+        if error_code == nisyscfg.errors.Status.END_OF_ENUM:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
         return SoftwareFeed(

@@ -68,7 +68,7 @@ class HardwareResourceIterator(object):
         error_code = self._library.NextResource(
             self._session, self._handle, ctypes.pointer(resource_handle)
         )
-        if error_code == 1:
+        if error_code == nisyscfg.errors.Status.END_OF_ENUM:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
         resource = HardwareResource(resource_handle)

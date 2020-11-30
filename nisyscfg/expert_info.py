@@ -35,7 +35,7 @@ class ExpertInfoIterator(object):
         error_code = self._library.NextExpertInfo(
             self._handle, expert_name, display_name, version
         )
-        if error_code == 1:
+        if error_code == nisyscfg.errors.Status.END_OF_ENUM:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
         return ExpertInfo(

@@ -19,7 +19,7 @@ class SystemInfoIterator(object):
             raise StopIteration()
         system_name = nisyscfg.types.simple_string()
         error_code = self._library.NextSystemInfo(self._handle, system_name)
-        if error_code == 1:
+        if error_code == nisyscfg.errors.Status.END_OF_ENUM:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)
         return c_string_decode(system_name.value)
