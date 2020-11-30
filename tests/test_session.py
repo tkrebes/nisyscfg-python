@@ -814,6 +814,34 @@ def test_get_hardware_resource_property(
     assert lib_mock.mock_calls == expected_calls
 
 
+@pytest.mark.parametrize(
+    "user_alias, resource_name, expected_value",
+    [
+        ("My Device", "My Resource", "My Device"),
+        ("", "My Resource", "My Resource"),
+        ("", "", ""),
+    ],
+)
+def test_get_hardware_resource_name(
+    lib_mock,
+    config_next_resource_side_effect_mock,
+    user_alias,
+    resource_name,
+    expected_value,
+):
+    with mock.patch.object(
+        nisyscfg.hardware_resource.HardwareResource, "expert_user_alias"
+    ) as expert_user_alias_mock, mock.patch.object(
+        nisyscfg.hardware_resource.HardwareResource, "expert_resource_name"
+    ) as expert_resource_name_mock:
+        expert_user_alias_mock.__getitem__.return_value = user_alias
+        expert_resource_name_mock.__getitem__.return_value = resource_name
+
+        with nisyscfg.Session() as session:
+            resource = next(session.find_hardware())
+            assert expected_value == resource.name
+
+
 def test_get_hardware_resource_property_catches_prop_does_not_exist_and_raises_attribute_error(
     lib_mock, config_next_resource_side_effect_mock
 ):

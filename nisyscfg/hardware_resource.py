@@ -115,10 +115,10 @@ class HardwareResource(object):
         """
         Returns a name that identifies a resource
         """
-        name = self[nisyscfg.IndexedResourceProperties.EXPERT_USER_ALIAS][0]
+        name = self.expert_user_alias[0]
         # If the resource doesn't have an alias, use the resource name instead
         if not name:
-            name = self[nisyscfg.IndexedResourceProperties.EXPERT_RESOURCE_NAME][0]
+            name = self.expert_resource_name[0]
         return name
 
     def close(self):
