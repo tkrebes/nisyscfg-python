@@ -1,4 +1,5 @@
 # This file is code generated
+# fmt: off
 
 import ctypes
 import threading
@@ -666,7 +667,7 @@ class Library(object):
         with self._func_lock:
             if self._TimestampFromValues_cfunc is None:
                 self._TimestampFromValues_cfunc = self._library.windll.NISysCfgTimestampFromValues
-                self._TimestampFromValues_cfunc.argtypes = [UInt64, ctypes.c_double, TimestampUTC]  # noqa: F405
+                self._TimestampFromValues_cfunc.argtypes = [UInt64, ctypes.c_double, ctypes.POINTER(TimestampUTC)]  # noqa: F405
                 self._TimestampFromValues_cfunc.restype = Status  # noqa: F405
         return self._TimestampFromValues_cfunc(secondsSinceEpoch1970, fractionalSeconds, timestamp)
 
@@ -674,7 +675,6 @@ class Library(object):
         with self._func_lock:
             if self._ValuesFromTimestamp_cfunc is None:
                 self._ValuesFromTimestamp_cfunc = self._library.windll.NISysCfgValuesFromTimestamp
-                self._ValuesFromTimestamp_cfunc.argtypes = [TimestampUTC, UInt64, ctypes.POINTER(ctypes.c_double)]  # noqa: F405
+                self._ValuesFromTimestamp_cfunc.argtypes = [TimestampUTC, ctypes.POINTER(UInt64), ctypes.POINTER(ctypes.c_double)]  # noqa: F405
                 self._ValuesFromTimestamp_cfunc.restype = Status  # noqa: F405
         return self._ValuesFromTimestamp_cfunc(timestamp, secondsSinceEpoch1970, fractionalSeconds)
-
