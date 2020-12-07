@@ -1,4 +1,5 @@
 import ctypes
+from functools import reduce
 import nisyscfg.errors
 import nisyscfg.properties
 import nisyscfg.pxi.properties
@@ -173,16 +174,16 @@ class HardwareResource(object):
 
         return c_string_decode(value.value)
 
-    def get_property(self, tag, default=_NoDefault()):
+    def get_property(self, name, default=_NoDefault()):
         """
         Returns value of hardware resource property
 
-        Return the value for hardware resource property specified by the tag,
+        Return the value for hardware resource property specified by the name,
         else default. If default is not given and the property does not exist,
         this function raises an nisyscfg.errors.LibraryError exception.
         """
         try:
-            return self[tag]
+            return reduce(getattr, name.split("."), self)
         except nisyscfg.errors.LibraryError as err:
             if err.code != nisyscfg.errors.Status.PROP_DOES_NOT_EXIST or isinstance(
                 default, _NoDefault
