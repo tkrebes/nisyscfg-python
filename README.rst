@@ -20,13 +20,21 @@ object-oriented wrapper around the NI System Configuration C API using the
 Installation
 ============
 
-Running **nisyscfg** requires the NI System Configuration Runtime. Visit the
+Note: Running **nisyscfg** requires the NI System Configuration Runtime. Visit the
 `ni.com/downloads <http://www.ni.com/downloads/>`_ to download the latest version
 of NI System Configuration.
 
-You also can download the project source and run::
+Install **nisyscfg** from PyPI:
 
-  $ python setup.py install
+.. code-block:: bash
+
+  $ pip install nisyscfg
+
+Or, install **nisyscfg** by cloning the main branch and running the following command in the directory of setup.py:
+
+.. code-block:: bash
+
+  $ pip install --pre .
 
 .. _usage-section:
 
