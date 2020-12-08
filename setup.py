@@ -25,7 +25,7 @@ setup(
     long_description=read_contents("README.rst"),
     long_description_content_type="text/x-rst",
     author="National Instruments",
-    url="https://github.com/tkrebes/nisyscfg",
+    url="https://github.com/tkrebes/nisyscfg-python",
     maintainer="Tyler Krehbiel",
     maintainer_email="tyler.krehbiel@ni.com",
     keywords=[pypi_name, "syscfg"],
