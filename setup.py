@@ -23,6 +23,7 @@ setup(
     version=get_version(title),
     description="NI System Configuration Python API",
     install_requires=[
+        "hightime",
         "six",
     ],
     author="National Instruments",

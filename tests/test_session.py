@@ -3,6 +3,7 @@ import nisyscfg as nisyscfg
 import nisyscfg.enums
 import nisyscfg.errors
 import nisyscfg.properties
+import nisyscfg.timestamp
 import pytest
 
 try:
@@ -58,6 +59,17 @@ class CUIntPMatcher(object):
 
     def __repr__(self):
         return "{}".format(ctypes.c_uint(self.value))
+
+
+class TimestampMatcher(object):
+    def __init__(self, value):
+        self.value = value
+
+    def __eq__(self, other):
+        return other[:] == self.value[:]
+
+    def __repr__(self):
+        return "{:08X}-{:08X}-{:08X}-{:08X}".format(*self.value[:])
 
 
 class ExpertInfoSideEffect(object):
@@ -814,6 +826,65 @@ def test_get_hardware_resource_property(
     assert lib_mock.mock_calls == expected_calls
 
 
+def test_get_hardware_resource_timestamp_property(
+    lib_mock,
+    config_next_resource_side_effect_mock,
+):
+    timestamp = nisyscfg.types.TimestampUTC()
+    timestamp[2] = 0x7C25B080
+
+    def get_resource_property_side_effect(resource_handle, property_id, property_value):
+        property_value.contents[:] = timestamp[:]
+        return nisyscfg.errors.Status.OK
+
+    def values_from_timestamp_side_effect(
+        timestamp, secondsSinceEpoch1970, fractionalSeconds
+    ):
+        secondsSinceEpoch1970.contents.value = 0
+        fractionalSeconds.contents.value = 0.0
+        return nisyscfg.errors.Status.OK
+
+    lib_mock.return_value.NISysCfgGetResourceProperty.side_effect = (
+        get_resource_property_side_effect
+    )
+    lib_mock.return_value.NISysCfgValuesFromTimestamp.side_effect = (
+        values_from_timestamp_side_effect
+    )
+
+    with nisyscfg.Session() as session:
+        resource = next(session.find_hardware())
+        assert nisyscfg.timestamp.tai_epoch == resource.current_time
+        property_id = nisyscfg.properties.Resource.CURRENT_TIME._id
+
+    expected_calls = [
+        mock.call(mock.ANY),
+        mock.call().NISysCfgInitializeSession(
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+        ),
+        mock.call().NISysCfgFindHardware(
+            mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY
+        ),
+        mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
+        mock.call().NISysCfgGetResourceProperty(
+            CVoidPMatcher(10), property_id, mock.ANY
+        ),
+        mock.call().NISysCfgValuesFromTimestamp(
+            TimestampMatcher(timestamp), mock.ANY, mock.ANY
+        ),
+        mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
+        mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
+        mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
+    ]
+    assert lib_mock.mock_calls == expected_calls
+
+
 @pytest.mark.parametrize(
     "user_alias, resource_name, expected_value",
     [
@@ -866,6 +937,31 @@ def test_get_hardware_resource_property_raises_library_error_when_error_code_is_
         resource = next(session.find_hardware())
         with pytest.raises(nisyscfg.errors.LibraryError):
             resource.is_device
+
+
+def test_hardware_resource_get_property_raises_library_error_when_error_code_is_not_prop_does_not_exist(
+    lib_mock, config_next_resource_side_effect_mock
+):
+    lib_mock.return_value.NISysCfgGetResourceProperty.return_value = (
+        nisyscfg.errors.Status.PROP_DOES_NOT_EXIST
+    )
+
+    with nisyscfg.Session() as session:
+        resource = next(session.find_hardware())
+        with pytest.raises(nisyscfg.errors.LibraryError):
+            resource.get_property("is_device")
+
+
+def test_hardware_resource_get_property_returns_default_when_error_code_is_not_prop_does_not_exist(
+    lib_mock, config_next_resource_side_effect_mock
+):
+    lib_mock.return_value.NISysCfgGetResourceProperty.return_value = (
+        nisyscfg.errors.Status.PROP_DOES_NOT_EXIST
+    )
+
+    with nisyscfg.Session() as session:
+        resource = next(session.find_hardware())
+        assert resource.get_property("is_device", True) == True
 
 
 @pytest.mark.parametrize(

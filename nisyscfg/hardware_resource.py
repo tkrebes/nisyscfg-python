@@ -151,6 +151,9 @@ class HardwareResource(object):
         if issubclass(c_type, nisyscfg.enums.BaseEnum):
             return c_type(value.value)
 
+        if c_type == nisyscfg.types.TimestampUTC:
+            return value
+
         return c_string_decode(value.value)
 
     def _get_indexed_property(self, id, index, c_type):
@@ -171,6 +174,9 @@ class HardwareResource(object):
 
         if issubclass(c_type, nisyscfg.enums.BaseEnum):
             return c_type(value.value)
+
+        if c_type == nisyscfg.types.TimestampUTC:
+            return value
 
         return c_string_decode(value.value)
 

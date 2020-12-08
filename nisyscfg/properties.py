@@ -21,6 +21,7 @@ from nisyscfg.enums import (
     ServiceType,
     SwitchState,
 )
+import nisyscfg.timestamp
 
 from typing import List, Union
 
@@ -50,7 +51,8 @@ class PropertyAccessor(object):
         self._setter(id, value, ctypes.c_char_p, PropertyType.STRING)
 
     def set_timestamp_property(self, id, value):
-        raise NotImplementedError
+        timestamp = nisyscfg.timestamp._convert_datatime_to_ctype(value)
+        self._setter(id, timestamp, nisyscfg.types.TimestampUTC, PropertyType.TIMESTAMP)
 
     def get_bool_property(self, id):
         return self._getter(id, Bool)
@@ -68,7 +70,8 @@ class PropertyAccessor(object):
         return self._getter(id, ctypes.c_char_p)
 
     def get_timestamp_property(self, id):
-        raise NotImplementedError
+        timestamp = self._getter(id, nisyscfg.types.TimestampUTC)
+        return nisyscfg.timestamp._convert_ctype_to_datatime(timestamp)
 
     def get_indexed_bool_property(self, id, index):
         return self._indexed_getter(id, index, Bool)
@@ -86,7 +89,8 @@ class PropertyAccessor(object):
         return self._indexed_getter(id, index, ctypes.c_char_p)
 
     def get_indexed_timestamp_property(self, id, index):
-        raise NotImplementedError
+        timestamp = self._indexed_getter(id, index, nisyscfg.types.TimestampUTC)
+        return nisyscfg.timestamp._convert_ctype_to_datatime(timestamp)
 
 
 class TypeProperty(object):
@@ -180,10 +184,10 @@ class TimestampProperty(TypeProperty):
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor):
-        raise NotImplementedError
+        return accessor.get_timestamp_property(self._id)
 
     def set(self, accessor: PropertyAccessor, value):
-        raise NotImplementedError
+        accessor.set_timestamp_property(self._id, value)
 
 
 class IndexedPropertyItems(object):
@@ -307,7 +311,7 @@ class IndexedTimestampProperty(IndexedProperty):
     __slots__ = ()
 
     def get_index(self, accessor: PropertyAccessor, index: int):
-        raise NotImplementedError
+        return accessor.get_indexed_timestamp_property(self._id, index)
 
 
 class PropertyGroup(object):
