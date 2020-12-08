@@ -1,38 +1,41 @@
+import os
 from setuptools import find_packages
 from setuptools import setup
 
 
-def get_version(name):
-    import os
+pypi_name = "nisyscfg"
 
-    version = None
+
+def read_contents(file_to_read):
+    with open(file_to_read, "r") as f:
+        return f.read()
+
+
+def get_version():
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    script_dir = os.path.join(script_dir, name)
-    if not os.path.exists(os.path.join(script_dir, "VERSION")):
-        version = "0.0.1.dev0"
-    else:
-        with open(os.path.join(script_dir, "VERSION"), "r") as version_file:
-            version = version_file.read().rstrip()
-    return version
+    version_path = os.path.join(script_dir, pypi_name, "VERSION")
+    return read_contents(version_path).strip()
 
-
-title = "nisyscfg"
 
 setup(
-    name=title,
-    version=get_version(title),
+    name=pypi_name,
+    zip_safe=True,
+    version=get_version(),
     description="NI System Configuration Python API",
+    long_description=read_contents("README.rst"),
+    long_description_content_type="text/x-rst",
+    author="National Instruments",
+    url="https://github.com/tkrebes/hightime",
+    maintainer="Tyler Krehbiel",
+    maintainer_email="tyler.krehbiel@ni.com",
+    keywords=[pypi_name, "syscfg"],
+    license="MIT",
+    include_package_data=True,
+    packages=find_packages(),
     install_requires=[
         "hightime",
         "six",
     ],
-    author="National Instruments",
-    maintainer="Tyler Krehbiel",
-    maintainer_email="tyler.krehbiel@ni.com",
-    keywords=["nisyscfg", "syscfg"],
-    license="MIT",
-    include_package_data=True,
-    packages=find_packages(),
     tests_require=["pytest"],
     classifiers=[
         "Development Status :: 1 - Planning",
@@ -48,4 +51,5 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Topic :: System :: Hardware :: Hardware Drivers",
     ],
+    package_data={pypi_name: ["VERSION"]},
 )
