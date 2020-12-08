@@ -25,7 +25,7 @@ setup(
     long_description=read_contents("README.rst"),
     long_description_content_type="text/x-rst",
     author="National Instruments",
-    url="https://github.com/tkrebes/hightime",
+    url="https://github.com/tkrebes/nisyscfg",
     maintainer="Tyler Krehbiel",
     maintainer_email="tyler.krehbiel@ni.com",
     keywords=[pypi_name, "syscfg"],
