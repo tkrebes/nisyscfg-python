@@ -979,7 +979,9 @@ class Session(object):
 
         if not components:
             raise nisyscfg.errors.Error(
-                f'Component "{component_name}" not available for install on target "{self.target_name}".'
+                'Component "{component_name}" not available for install on target "{self.target_name}".'.format(
+                    component_name=component_name, self=self
+                )
             )
 
         return max(components, key=lambda comp: comp.version.split("."))
