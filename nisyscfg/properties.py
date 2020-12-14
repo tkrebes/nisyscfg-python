@@ -195,18 +195,31 @@ class IndexedPropertyItems(object):
         self._accessor = accessor
         self._tag = tag
 
-    def __getitem__(self, key):
+    def __getitem__(self, index):
         try:
-            key + 1
+            index + 1
         except TypeError:
-            raise KeyError(key)
-        if key >= 0 and key < len(self):
-            return self._tag.get_index(self._accessor, key)
-        raise KeyError(key)
+            raise TypeError(index)
+        # The index is stored as a 12-bit number in the driver.
+        if index < 0 and index >= 4096:
+            raise IndexError(index)
+        try:
+            return self._tag.get_index(self._accessor, index)
+        except nisyscfg.errors.LibraryError as err:
+            if err.code == nisyscfg.errors.Status.PROP_DOES_NOT_EXIST:
+                raise IndexError(index)
+            raise
 
     def __len__(self):
         if not hasattr(self, "_len"):
-            self._len = self._tag.count_property.get(self._accessor)
+            try:
+                self._len = self._tag.count_property.get(self._accessor)
+
+            # Not all NI System API experts implement the count property. So
+            # if it does not exist, explicitly count each index.
+            except nisyscfg.errors.LibraryError as err:
+                if err.code == nisyscfg.errors.Status.PROP_DOES_NOT_EXIST:
+                    self._len = sum(1 for _ in self)
         return self._len
 
     def __iter__(self):
@@ -220,9 +233,10 @@ class IndexedPropertyItems(object):
 
             def __next__(self):
                 self._index += 1
-                if self._index == len(self._properties):
+                try:
+                    return self._properties[self._index]
+                except IndexError:
                     raise StopIteration()
-                return self._properties[self._index]
 
             def next(self):
                 return self.__next__()

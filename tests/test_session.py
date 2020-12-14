@@ -1009,11 +1009,14 @@ def test_get_hardware_index_property(
         return nisyscfg.errors.Status.OK
 
     def get_indexed_property_mock(resource_handle, property_id, index, property_value):
-        if property_value.__class__.__name__.startswith("c_char_Array"):
-            property_value.value = expected_values[index].encode("ascii")
-        else:
-            property_value.contents.value = expected_values[index]
-        return nisyscfg.errors.Status.OK
+        try:
+            if property_value.__class__.__name__.startswith("c_char_Array"):
+                property_value.value = expected_values[index].encode("ascii")
+            else:
+                property_value.contents.value = expected_values[index]
+            return nisyscfg.errors.Status.OK
+        except IndexError:
+            return nisyscfg.errors.Status.PROP_DOES_NOT_EXIST
 
     lib_mock.return_value.NISysCfgNextResource.side_effect = next_resource_side_effect
     lib_mock.return_value.NISysCfgGetResourceProperty.side_effect = (
@@ -1054,7 +1057,7 @@ def test_get_hardware_index_property(
         mock.call().NISysCfgGetResourceIndexedProperty(
             CVoidPMatcher(10), property_id, i, mock.ANY
         )
-        for i in range(len(expected_values))
+        for i in range(len(expected_values) + 1)
     ]
     expected_calls += [
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
