@@ -15,9 +15,7 @@ def nixnet_upgrade_firmware(serial_number):
 
         try:
             # Assume only one device will be found
-            device = next(
-                session.find_hardware(filter=device_filter, expert_names="xnet")
-            )
+            device = next(session.find_hardware(filter=device_filter, expert_names="xnet"))
         except StopIteration:
             raise DeviceNotFoundError(
                 'Could not find a device with serial number "{}"'.format(serial_number)

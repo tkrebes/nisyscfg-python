@@ -20,9 +20,7 @@ def nixnet_assign_port_name(serial_number, port_number, port_name):
 
         try:
             # Assume only one device will be found
-            device = next(
-                session.find_hardware(filter=device_filter, expert_names="xnet")
-            )
+            device = next(session.find_hardware(filter=device_filter, expert_names="xnet"))
         except StopIteration:
             raise DeviceNotFoundError(
                 'Could not find a device with serial number "{}"'.format(serial_number)
@@ -37,9 +35,7 @@ def nixnet_assign_port_name(serial_number, port_number, port_name):
 
         try:
             # Assume only one interface will be found
-            interface = next(
-                session.find_hardware(filter=interface_filter, expert_names="xnet")
-            )
+            interface = next(session.find_hardware(filter=interface_filter, expert_names="xnet"))
         except StopIteration:
             raise PortNotFoundError(
                 'Device with serial number "{}" does not have port number {}'.format(

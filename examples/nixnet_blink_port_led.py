@@ -16,9 +16,7 @@ def nixnet_blink_port_led(port_name, mode):
 
         try:
             # Assume only one interface will be found
-            interface = next(
-                session.find_hardware(filter=interface_filter, expert_names="xnet")
-            )
+            interface = next(session.find_hardware(filter=interface_filter, expert_names="xnet"))
         except StopIteration:
             raise PortNotFoundError('Could not find a port "{}"'.format(port_name))
 

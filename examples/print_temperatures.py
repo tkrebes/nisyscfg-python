@@ -31,9 +31,7 @@ def print_chassis_temperatures(session):
     for chassis in session.find_hardware(filter):
         print("    " + chassis.name)
         print_resource_temperature(chassis, indent="        ")
-        print_device_temperatures(
-            session, chassis.provides_link_name, indent="        "
-        )
+        print_device_temperatures(session, chassis.provides_link_name, indent="        ")
 
 
 def print_temperatures():
