@@ -249,13 +249,7 @@ class IndexedProperty(TypeProperty):
     __slots__ = ("_count_property",)
 
     def __init__(
-        self,
-        id,
-        count_property,
-        enum=None,
-        *,
-        readable: bool = True,
-        writeable: bool = True
+        self, id, count_property, enum=None, *, readable: bool = True, writeable: bool = True
     ):
         self._id = id
         self._count_property = count_property
@@ -438,9 +432,7 @@ class Resource(PropertyGroup):
 
 
 class IndexedResource(PropertyGroup):
-    SERVICE_TYPE = IndexedIntProperty(
-        17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType
-    )
+    SERVICE_TYPE = IndexedIntProperty(17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType)
     AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(
         17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS
     )
@@ -472,15 +464,9 @@ class IndexedResource(PropertyGroup):
     FAN_READING = IndexedUnsignedIntProperty(17182720, Resource.NUMBER_OF_FANS)
     POWER_NAME = IndexedStringProperty(17453056, Resource.NUMBER_OF_POWER_SENSORS)
     POWER_READING = IndexedDoubleProperty(17457152, Resource.NUMBER_OF_POWER_SENSORS)
-    POWER_UPPER_CRITICAL = IndexedDoubleProperty(
-        17461248, Resource.NUMBER_OF_POWER_SENSORS
-    )
-    TEMPERATURE_NAME = IndexedStringProperty(
-        17190912, Resource.NUMBER_OF_TEMPERATURE_SENSORS
-    )
-    TEMPERATURE_READING = IndexedDoubleProperty(
-        16965632, Resource.NUMBER_OF_TEMPERATURE_SENSORS
-    )
+    POWER_UPPER_CRITICAL = IndexedDoubleProperty(17461248, Resource.NUMBER_OF_POWER_SENSORS)
+    TEMPERATURE_NAME = IndexedStringProperty(17190912, Resource.NUMBER_OF_TEMPERATURE_SENSORS)
+    TEMPERATURE_READING = IndexedDoubleProperty(16965632, Resource.NUMBER_OF_TEMPERATURE_SENSORS)
     TEMPERATURE_LOWER_CRITICAL = IndexedDoubleProperty(
         17195008, Resource.NUMBER_OF_TEMPERATURE_SENSORS
     )
@@ -488,21 +474,11 @@ class IndexedResource(PropertyGroup):
         17199104, Resource.NUMBER_OF_TEMPERATURE_SENSORS
     )
     VOLTAGE_NAME = IndexedStringProperty(17154048, Resource.NUMBER_OF_VOLTAGE_SENSORS)
-    VOLTAGE_READING = IndexedDoubleProperty(
-        17158144, Resource.NUMBER_OF_VOLTAGE_SENSORS
-    )
-    VOLTAGE_NOMINAL = IndexedDoubleProperty(
-        17162240, Resource.NUMBER_OF_VOLTAGE_SENSORS
-    )
-    VOLTAGE_LOWER_CRITICAL = IndexedDoubleProperty(
-        17166336, Resource.NUMBER_OF_VOLTAGE_SENSORS
-    )
-    VOLTAGE_UPPER_CRITICAL = IndexedDoubleProperty(
-        17170432, Resource.NUMBER_OF_VOLTAGE_SENSORS
-    )
-    USER_LED_NAME = IndexedStringProperty(
-        17285120, Resource.NUMBER_OF_USER_LED_INDICATORS
-    )
+    VOLTAGE_READING = IndexedDoubleProperty(17158144, Resource.NUMBER_OF_VOLTAGE_SENSORS)
+    VOLTAGE_NOMINAL = IndexedDoubleProperty(17162240, Resource.NUMBER_OF_VOLTAGE_SENSORS)
+    VOLTAGE_LOWER_CRITICAL = IndexedDoubleProperty(17166336, Resource.NUMBER_OF_VOLTAGE_SENSORS)
+    VOLTAGE_UPPER_CRITICAL = IndexedDoubleProperty(17170432, Resource.NUMBER_OF_VOLTAGE_SENSORS)
+    USER_LED_NAME = IndexedStringProperty(17285120, Resource.NUMBER_OF_USER_LED_INDICATORS)
     USER_SWITCH_NAME = IndexedStringProperty(17297408, Resource.NUMBER_OF_USER_SWITCHES)
     USER_SWITCH_STATE = IndexedIntProperty(
         17301504, Resource.NUMBER_OF_USER_SWITCHES, enum=SwitchState
@@ -620,9 +596,7 @@ class Expert(object):
 
 
 class PropertyBag(object):
-    def __init__(
-        self, *property_groups: List[PropertyGroup], expert: Union[None, str] = None
-    ):
+    def __init__(self, *property_groups: List[PropertyGroup], expert: Union[None, str] = None):
         self._property_groups = property_groups
         self._expert = expert
 

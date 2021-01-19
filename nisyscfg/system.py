@@ -154,9 +154,7 @@ class Session(object):
             nisyscfg.errors.handle_error(self, error_code)
             self._session = None
 
-    def get_system_experts(
-        self, expert_names: str = ""
-    ) -> nisyscfg.expert_info.ExpertInfoIterator:
+    def get_system_experts(self, expert_names: str = "") -> nisyscfg.expert_info.ExpertInfoIterator:
         """
         Returns the experts available on the system.
 
@@ -229,9 +227,7 @@ class Session(object):
             ctypes.pointer(resource_handle),
         )
         nisyscfg.errors.handle_error(self, error_code)
-        iter = nisyscfg.hardware_resource.HardwareResourceIterator(
-            self._session, resource_handle
-        )
+        iter = nisyscfg.hardware_resource.HardwareResourceIterator(self._session, resource_handle)
         self._children.append(iter)
         return iter
 
@@ -416,9 +412,7 @@ class Session(object):
         )
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = nisyscfg.component_info.ComponentInfoIterator(
-                software_component_handle
-            )
+            iter = nisyscfg.component_info.ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
@@ -539,9 +533,7 @@ class Session(object):
         )
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = nisyscfg.component_info.ComponentInfoIterator(
-                software_component_handle
-            )
+            iter = nisyscfg.component_info.ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
@@ -583,15 +575,11 @@ class Session(object):
         )
         nisyscfg.errors.handle_error(self, error_code)
         if software_component_handle:
-            iter = nisyscfg.component_info.ComponentInfoIterator(
-                software_component_handle
-            )
+            iter = nisyscfg.component_info.ComponentInfoIterator(software_component_handle)
             self._children.append(iter)
             return iter
 
-    def add_software_feed(
-        self, name: str, uri: str, enabled: bool, trusted: bool
-    ) -> None:
+    def add_software_feed(self, name: str, uri: str, enabled: bool, trusted: bool) -> None:
         """
         Adds a software feed to the system.
 
@@ -671,9 +659,7 @@ class Session(object):
         Raises an nisyscfg.errors.LibraryError exception in the event of an
         error.
         """
-        error_code = self._library.RemoveSoftwareFeed(
-            self._session, c_string_encode(name)
-        )
+        error_code = self._library.RemoveSoftwareFeed(self._session, c_string_encode(name))
         nisyscfg.errors.handle_error(self, error_code)
 
     def install_all(
@@ -815,9 +801,9 @@ class Session(object):
                 )
 
         if components_to_uninstall:
-            c_components_to_uninstall = (
-                ctypes.c_char_p * len(components_to_uninstall)
-            )(*map(c_string_encode, components_to_uninstall))
+            c_components_to_uninstall = (ctypes.c_char_p * len(components_to_uninstall))(
+                *map(c_string_encode, components_to_uninstall)
+            )
         else:
             c_components_to_uninstall = (ctypes.c_char_p * 0)()
 
@@ -830,9 +816,7 @@ class Session(object):
             auto_select_recommends,
             software_to_install._handle,
             len(c_components_to_uninstall),
-            ctypes.cast(
-                c_components_to_uninstall, ctypes.POINTER(ctypes.POINTER(ctypes.c_char))
-            ),
+            ctypes.cast(c_components_to_uninstall, ctypes.POINTER(ctypes.POINTER(ctypes.c_char))),
             ctypes.pointer(broken_dependency_handle),
         )
         nisyscfg.errors.handle_error(self, error_code)
@@ -1012,12 +996,8 @@ class Session(object):
     def resource(self) -> nisyscfg.hardware_resource.HardwareResource:
         """System resource properties"""
         if not hasattr(self, "_resource"):
-            resource_handle = self._get_property(
-                16941086, nisyscfg.types.ResourceHandle
-            )
-            self._resource = nisyscfg.hardware_resource.HardwareResource(
-                resource_handle
-            )
+            resource_handle = self._get_property(16941086, nisyscfg.types.ResourceHandle)
+            self._resource = nisyscfg.hardware_resource.HardwareResource(resource_handle)
             self._children.append(self._resource)
         return self._resource
 
@@ -1076,6 +1056,4 @@ class Session(object):
             error_code_2 = self._library.FreeDetailedString(c_details)
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
-        return SaveChangesResult(
-            restart_required=restart_required.value != 0, details=details
-        )
+        return SaveChangesResult(restart_required=restart_required.value != 0, details=details)

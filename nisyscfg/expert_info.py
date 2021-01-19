@@ -32,9 +32,7 @@ class ExpertInfoIterator(object):
         expert_name = nisyscfg.types.simple_string()
         display_name = nisyscfg.types.simple_string()
         version = nisyscfg.types.simple_string()
-        error_code = self._library.NextExpertInfo(
-            self._handle, expert_name, display_name, version
-        )
+        error_code = self._library.NextExpertInfo(self._handle, expert_name, display_name, version)
         if error_code == nisyscfg.errors.Status.END_OF_ENUM:
             raise StopIteration()
         nisyscfg.errors.handle_error(self, error_code)

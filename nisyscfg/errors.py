@@ -48,17 +48,17 @@ class LibraryWarning(Warning):
 class UnsupportedPlatformError(Error):
     def __init__(self):
         super(UnsupportedPlatformError, self).__init__(
-            "Platform is unsupported: "
-            + platform.architecture()[0]
-            + " "
-            + platform.system()
+            "Platform is unsupported: " + platform.architecture()[0] + " " + platform.system()
         )
 
 
 class LibraryNotInstalledError(Error):
     def __init__(self):
         super(LibraryNotInstalledError, self).__init__(
-            "The NI System Configuration runtime could not be loaded. Make sure it is installed and its bitness matches that of your Python interpreter. Please visit http://www.ni.com/downloads/drivers/ to download and install it."
+            "The NI System Configuration runtime could not be loaded. Make sure"
+            " it is installed and its bitness matches that of your Python"
+            " interpreter. Please visit http://www.ni.com/downloads/drivers/ to"
+            " download and install it."
         )
 
 

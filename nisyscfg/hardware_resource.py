@@ -86,9 +86,7 @@ class HardwareResourceIterator(object):
             self._handle = None
 
 
-@nisyscfg.properties.PropertyBag(
-    nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource
-)
+@nisyscfg.properties.PropertyBag(nisyscfg.properties.Resource, nisyscfg.properties.IndexedResource)
 @nisyscfg.properties.PropertyBag(
     nisyscfg.pxi.properties.Resource,
     nisyscfg.pxi.properties.IndexedResource,
@@ -167,9 +165,7 @@ class HardwareResource(object):
             value = c_type()
             value_arg = ctypes.pointer(value)
 
-        error_code = self._library.GetResourceIndexedProperty(
-            self._handle, id, index, value_arg
-        )
+        error_code = self._library.GetResourceIndexedProperty(self._handle, id, index, value_arg)
         nisyscfg.errors.handle_error(self, error_code)
 
         if issubclass(c_type, nisyscfg.enums.BaseEnum):
@@ -295,9 +291,7 @@ class HardwareResource(object):
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
 
-        return SaveChangesResult(
-            restart_required=restart_required.value != 0, details=details
-        )
+        return SaveChangesResult(restart_required=restart_required.value != 0, details=details)
 
     def self_test(self, mode=0):
         """
@@ -317,9 +311,7 @@ class HardwareResource(object):
         error.
         """
         c_details = ctypes.POINTER(ctypes.c_char)()
-        error_code = self._library.SelfTestHardware(
-            self._handle, mode, ctypes.pointer(c_details)
-        )
+        error_code = self._library.SelfTestHardware(self._handle, mode, ctypes.pointer(c_details))
         if c_details:
             details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
             error_code_2 = self._library.FreeDetailedString(c_details)
@@ -461,9 +453,7 @@ class HardwareResource(object):
             details=details,
         )
 
-    def delete(
-        self, mode=nisyscfg.enums.DeleteValidationMode.DELETE_IF_NO_DEPENDENCIES_EXIST
-    ):
+    def delete(self, mode=nisyscfg.enums.DeleteValidationMode.DELETE_IF_NO_DEPENDENCIES_EXIST):
         """
         Permanently removes a hardware resource and its configuration data from
         the system.

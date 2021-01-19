@@ -35,7 +35,5 @@ class Filter(object):
         else:
             value = c_type(value)
 
-        error_code = self._library.SetFilterPropertyWithType(
-            self._handle, id, nisyscfg_type, value
-        )
+        error_code = self._library.SetFilterPropertyWithType(self._handle, id, nisyscfg_type, value)
         nisyscfg.errors.handle_error(self, error_code)

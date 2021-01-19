@@ -67,9 +67,7 @@ class Resource(PropertyGroup):
 
 class IndexedResource(PropertyGroup):
     # Power supply index attributes
-    POWER_SUPPLY_NAME = IndexedStringProperty(
-        186781696, Resource.POWER_SUPPLY_BAY_COUNT
-    )
+    POWER_SUPPLY_NAME = IndexedStringProperty(186781696, Resource.POWER_SUPPLY_BAY_COUNT)
     POWER_SUPPLY_STATE = IndexedUnsignedIntProperty(
         186789888, Resource.POWER_SUPPLY_BAY_COUNT, PowerSupplyStates
     )
@@ -87,9 +85,7 @@ class IndexedResource(PropertyGroup):
     )  #: (Hertz)
 
     # High Density Trigger Port index Attributes
-    TRIG_PORT_NAME = IndexedStringProperty(
-        200290304, Resource.HIGH_DENSITY_TRIG_PORT_COUNT
-    )
+    TRIG_PORT_NAME = IndexedStringProperty(200290304, Resource.HIGH_DENSITY_TRIG_PORT_COUNT)
     TRIG_PORT_STATE = IndexedUnsignedIntProperty(
         200294400, Resource.HIGH_DENSITY_TRIG_PORT_COUNT, PxiHighDensityTrigPortState
     )

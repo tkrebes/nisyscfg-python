@@ -58,9 +58,7 @@ class DependencyInfoIterator(object):
             depender_detailed_description = c_string_decode(
                 ctypes.cast(c_depender_detailed_description, ctypes.c_char_p).value
             )
-            error_code = self._library.FreeDetailedString(
-                c_depender_detailed_description
-            )
+            error_code = self._library.FreeDetailedString(c_depender_detailed_description)
             nisyscfg.errors.handle_error(self, error_code)
         else:
             depender_detailed_description = ""
@@ -69,9 +67,7 @@ class DependencyInfoIterator(object):
             dependee_detailed_description = c_string_decode(
                 ctypes.cast(c_dependee_detailed_description, ctypes.c_char_p).value
             )
-            error_code = self._library.FreeDetailedString(
-                c_dependee_detailed_description
-            )
+            error_code = self._library.FreeDetailedString(c_dependee_detailed_description)
             nisyscfg.errors.handle_error(self, error_code)
         else:
             dependee_detailed_description = ""

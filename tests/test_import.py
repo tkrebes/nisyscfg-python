@@ -13,6 +13,4 @@ for root, dirs, files in os.walk("nisyscfg"):
     for f in files:
         if f.endswith(".py") and not f.startswith("_"):
             mod_name = base_name + "." + f[:-3]
-            exec(
-                "def test_{}(): import {}".format(mod_name.replace(".", "_"), mod_name)
-            )
+            exec("def test_{}(): import {}".format(mod_name.replace(".", "_"), mod_name))

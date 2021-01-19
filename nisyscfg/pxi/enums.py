@@ -4,9 +4,7 @@ from nisyscfg.enums import BaseEnum
 class Clock10Sources(BaseEnum):
     UNKNOWN = -1  #: Not applicable, or not software-readable
     INTERNAL = 0  #: Internal Oscillator
-    BUILT_IN_CONNECTOR = (
-        1  #: Supplied by the dedicated 10 MHz REF IN connector (e.g. SMA or SMB)
-    )
+    BUILT_IN_CONNECTOR = 1  #: Supplied by the dedicated 10 MHz REF IN connector (e.g. SMA or SMB)
     TIMING_MODULE = 2  #: System Timing Module
     TRIG_10MHZ_PORT0 = 3  #: TRIG / 10 MHz Port 0 / REF IN
 
@@ -26,24 +24,26 @@ class InternalOscillators(BaseEnum):
 class PxiHighDensityTrigPortState(BaseEnum):
     DISCONNECTED = 0  #: The port is disconnected
     CONNECTED = 1  #: The port is connected to another device known to this host
-    CONNECTED_UNKNOWN = (
-        2  #: The port is connected, but the remote device cannot be found
-    )
-    LOOPBACK = (
-        3  #: 2 High Density Trigger ports on the device are connected to each other
-    )
+    CONNECTED_UNKNOWN = 2  #: The port is connected, but the remote device cannot be found
+    LOOPBACK = 3  #: 2 High Density Trigger ports on the device are connected to each other
 
 
 class FanModes(BaseEnum):
     AUTO = 1  #: Default operating mode
-    SAFE_MANUAL = 2  #: Allows caller to manipulate the fan speed within safe boundaries by setting FanUserRpm
+    SAFE_MANUAL = (
+        2  #: Allows caller to manipulate the fan speed within safe boundaries by setting FanUserRpm
+    )
     HIGH = 4  #: Fans run at the maximum speed for the current cooling profile
 
 
 class CoolingProfiles(BaseEnum):
     WATTS_38 = 1  #: Default operating mode
-    WATTS_58 = 2  #: More aggressive cooling profile for cooling modules requiring 58W or less of cooling
-    WATTS_82 = 4  #: More aggressive cooling profile for cooling modules requiring 82W or less of cooling
+    WATTS_58 = (
+        2  #: More aggressive cooling profile for cooling modules requiring 58W or less of cooling
+    )
+    WATTS_82 = (
+        4  #: More aggressive cooling profile for cooling modules requiring 82W or less of cooling
+    )
 
 
 class CoolingProfileSource(BaseEnum):

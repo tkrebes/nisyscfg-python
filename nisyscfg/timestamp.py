@@ -35,9 +35,7 @@ def _convert_datatime_to_ctype(timestamp: datetime) -> nisyscfg.types.TimestampU
     library = nisyscfg._library_singleton.get()
 
     time_since_tai_epoch = timestamp - tai_epoch
-    seconds_since_tai_epoch = (
-        time_since_tai_epoch.days * 86400 + time_since_tai_epoch.seconds
-    )
+    seconds_since_tai_epoch = time_since_tai_epoch.days * 86400 + time_since_tai_epoch.seconds
     fractional_seconds = (
         (time_since_tai_epoch.microseconds / 10 ** 6)
         + (time_since_tai_epoch.femtoseconds / 10 ** 15)

@@ -98,7 +98,8 @@ class EnumSoftwareComponent(object):
         enumeration. This field is optional as long as the version selection
         mode is set to Highest.
 
-        mode - Choose whether an exact version or the highest version of the software component specified by id should be added to the enumeration.
+        mode - Choose whether an exact version or the highest version of the
+        software component specified by id should be added to the enumeration.
 
         Raises an nisyscfg.errors.LibraryError exception in the event of an error.
         """

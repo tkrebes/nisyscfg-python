@@ -122,9 +122,7 @@ def get_system_experts_mock(session_handle, expert_names, expert_enum_handle):
     return nisyscfg.errors.Status.OK
 
 
-def find_hardware_mock(
-    session_handle, mode, filter_handle, expert_names, resource_enum_handle
-):
+def find_hardware_mock(session_handle, mode, filter_handle, expert_names, resource_enum_handle):
     resource_enum_handle.contents.value = RESOURCE_ENUM_HANDLE
     return nisyscfg.errors.Status.OK
 
@@ -134,9 +132,7 @@ def create_filter_mock(session_handle, filter_handle):
     return nisyscfg.errors.Status.OK
 
 
-def get_available_software_components_mock(
-    session_handle, item_types, software_component_handle
-):
+def get_available_software_components_mock(session_handle, item_types, software_component_handle):
     software_component_handle.contents.value = SOFTWARE_COMPONENT_HANDLE
     return nisyscfg.errors.Status.OK
 
@@ -165,23 +161,15 @@ def lib_mock():
                 lib.__enter__.return_value = lib
                 lib.NISysCfgInitializeSession.side_effect = initialize_session_mock
                 lib.NISysCfgCloseHandle.return_value = nisyscfg.errors.Status.OK
-                lib.NISysCfgGetStatusDescription.side_effect = (
-                    _get_status_description_mock
-                )
+                lib.NISysCfgGetStatusDescription.side_effect = _get_status_description_mock
                 lib.NISysCfgFreeDetailedString.return_value = nisyscfg.errors.Status.OK
                 lib.NISysCfgGetSystemExperts.side_effect = get_system_experts_mock
-                lib.NISysCfgNextExpertInfo.return_value = (
-                    nisyscfg.errors.Status.END_OF_ENUM
-                )
+                lib.NISysCfgNextExpertInfo.return_value = nisyscfg.errors.Status.END_OF_ENUM
                 lib.NISysCfgFindHardware.side_effect = find_hardware_mock
-                lib.NISysCfgNextResource.return_value = (
-                    nisyscfg.errors.Status.END_OF_ENUM
-                )
+                lib.NISysCfgNextResource.return_value = nisyscfg.errors.Status.END_OF_ENUM
                 lib.NISysCfgCreateFilter.side_effect = create_filter_mock
                 lib.NISysCfgSetFilterProperty.return_value = nisyscfg.errors.Status.OK
-                lib.NISysCfgSetFilterPropertyWithType.return_value = (
-                    nisyscfg.errors.Status.OK
-                )
+                lib.NISysCfgSetFilterPropertyWithType.return_value = nisyscfg.errors.Status.OK
                 lib.NISysCfgSetResourceProperty.return_value = nisyscfg.errors.Status.OK
                 lib.NISysCfgRestart.return_value = nisyscfg.errors.Status.OK
                 lib.NISysCfgGetAvailableSoftwareComponents.side_effect = (
@@ -190,9 +178,7 @@ def lib_mock():
                 lib.NISysCfgGetInstalledSoftwareComponents.side_effect = (
                     get_installed_software_components_mock
                 )
-                lib.NISysCfgNextComponentInfo.return_value = (
-                    nisyscfg.errors.Status.END_OF_ENUM
-                )
+                lib.NISysCfgNextComponentInfo.return_value = nisyscfg.errors.Status.END_OF_ENUM
                 lib.NISysCfgGetSystemProperty.side_effect = get_system_property_mock
                 yield ctypes_mock
     nisyscfg._library_singleton._instance = None
@@ -208,12 +194,8 @@ def config_next_resource_side_effect_mock(lib_mock):
         ]
     )
 
-    def next_resource_side_effect(
-        session_handle, resource_enum_handle, resource_handle
-    ):
-        return next(side_effect_functions)(
-            session_handle, resource_enum_handle, resource_handle
-        )
+    def next_resource_side_effect(session_handle, resource_enum_handle, resource_handle):
+        return next(side_effect_functions)(session_handle, resource_enum_handle, resource_handle)
 
     lib_mock.return_value.NISysCfgNextResource.side_effect = next_resource_side_effect
 
@@ -227,9 +209,7 @@ def config_get_resource_property_mock(lib_mock, expected_value):
             property_value.contents.value = expected_value
         return nisyscfg.errors.Status.OK
 
-    lib_mock.return_value.NISysCfgGetResourceProperty.side_effect = (
-        get_resource_property_mock
-    )
+    lib_mock.return_value.NISysCfgGetResourceProperty.side_effect = get_resource_property_mock
 
 
 def test_open_close_session_invokes_nisyscfg_c_api(lib_mock):
@@ -330,9 +310,7 @@ def test__get_status_description(lib_mock):
             nisyscfg.errors.Status.OUT_OF_MEMORY,
             mock.ANY,
         ),
-        mock.call().NISysCfgFreeDetailedString(
-            CVoidPMatcher(STATUS_DESCRIPTION_VOID_P.value)
-        ),
+        mock.call().NISysCfgFreeDetailedString(CVoidPMatcher(STATUS_DESCRIPTION_VOID_P.value)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
     ]
     assert lib_mock.mock_calls == expected_calls
@@ -353,9 +331,7 @@ def test_get_system_experts_with_no_experts(lib_mock):
             mock.ANY,
             mock.ANY,
         ),
-        mock.call().NISysCfgGetSystemExperts(
-            CVoidPMatcher(SESSION_HANDLE), b"", mock.ANY
-        ),
+        mock.call().NISysCfgGetSystemExperts(CVoidPMatcher(SESSION_HANDLE), b"", mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(EXPERT_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
     ]
@@ -399,9 +375,7 @@ def test_get_system_experts_with_two_experts(lib_mock):
             mock.ANY,
             mock.ANY,
         ),
-        mock.call().NISysCfgGetSystemExperts(
-            CVoidPMatcher(SESSION_HANDLE), b"", mock.ANY
-        ),
+        mock.call().NISysCfgGetSystemExperts(CVoidPMatcher(SESSION_HANDLE), b"", mock.ANY),
         mock.call().NISysCfgNextExpertInfo(
             CVoidPMatcher(EXPERT_ENUM_HANDLE), mock.ANY, mock.ANY, mock.ANY
         ),
@@ -428,9 +402,7 @@ def test_get_system_experts_with_csv_expert_names(lib_mock):
     with nisyscfg.Session() as session:
         session.get_system_experts("xnet,sync")
     expected_calls = [
-        mock.call().NISysCfgGetSystemExperts(
-            CVoidPMatcher(SESSION_HANDLE), b"xnet,sync", mock.ANY
-        ),
+        mock.call().NISysCfgGetSystemExperts(CVoidPMatcher(SESSION_HANDLE), b"xnet,sync", mock.ANY),
     ]
     assert lib_mock().NISysCfgGetSystemExperts.mock_calls == expected_calls
 
@@ -439,9 +411,7 @@ def test_get_system_experts_with_list_of_expert_names(lib_mock):
     with nisyscfg.Session() as session:
         session.get_system_experts(["xnet", "sync"])
     expected_calls = [
-        mock.call().NISysCfgGetSystemExperts(
-            CVoidPMatcher(SESSION_HANDLE), b"xnet,sync", mock.ANY
-        ),
+        mock.call().NISysCfgGetSystemExperts(CVoidPMatcher(SESSION_HANDLE), b"xnet,sync", mock.ANY),
     ]
     assert lib_mock().NISysCfgGetSystemExperts.mock_calls == expected_calls
 
@@ -516,9 +486,7 @@ def test_find_hardware_with_csv_expert_names(lib_mock):
     with nisyscfg.Session() as session:
         session.find_hardware(expert_names="xnet,sync")
     expected_calls = [
-        mock.call().NISysCfgFindHardware(
-            mock.ANY, mock.ANY, mock.ANY, b"xnet,sync", mock.ANY
-        ),
+        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, b"xnet,sync", mock.ANY),
     ]
     assert lib_mock().NISysCfgFindHardware.mock_calls == expected_calls
 
@@ -527,9 +495,7 @@ def test_find_hardware_with_list_of_expert_names(lib_mock):
     with nisyscfg.Session() as session:
         session.find_hardware(expert_names=["xnet", "sync"])
     expected_calls = [
-        mock.call().NISysCfgFindHardware(
-            mock.ANY, mock.ANY, mock.ANY, b"xnet,sync", mock.ANY
-        ),
+        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, b"xnet,sync", mock.ANY),
     ]
     assert lib_mock().NISysCfgFindHardware.mock_calls == expected_calls
 
@@ -720,12 +686,8 @@ def test_interating_over_hardware_resources(lib_mock):
         ]
     )
 
-    def next_resource_side_effect(
-        session_handle, resource_enum_handle, resource_handle
-    ):
-        return next(side_effect_functions)(
-            session_handle, resource_enum_handle, resource_handle
-        )
+    def next_resource_side_effect(session_handle, resource_enum_handle, resource_handle):
+        return next(side_effect_functions)(session_handle, resource_enum_handle, resource_handle)
 
     lib_mock.return_value.NISysCfgNextResource.side_effect = next_resource_side_effect
 
@@ -745,9 +707,7 @@ def test_interating_over_hardware_resources(lib_mock):
             mock.ANY,
             mock.ANY,
         ),
-        mock.call().NISysCfgFindHardware(
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY
-        ),
+        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgNextResource(
             CVoidPMatcher(SESSION_HANDLE), CVoidPMatcher(RESOURCE_ENUM_HANDLE), mock.ANY
         ),
@@ -812,13 +772,9 @@ def test_get_hardware_resource_property(
             mock.ANY,
             mock.ANY,
         ),
-        mock.call().NISysCfgFindHardware(
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY
-        ),
+        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgGetResourceProperty(
-            CVoidPMatcher(10), property_id, mock.ANY
-        ),
+        mock.call().NISysCfgGetResourceProperty(CVoidPMatcher(10), property_id, mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
@@ -837,9 +793,7 @@ def test_get_hardware_resource_timestamp_property(
         property_value.contents[:] = timestamp[:]
         return nisyscfg.errors.Status.OK
 
-    def values_from_timestamp_side_effect(
-        timestamp, secondsSinceEpoch1970, fractionalSeconds
-    ):
+    def values_from_timestamp_side_effect(timestamp, secondsSinceEpoch1970, fractionalSeconds):
         secondsSinceEpoch1970.contents.value = 0
         fractionalSeconds.contents.value = 0.0
         return nisyscfg.errors.Status.OK
@@ -868,16 +822,10 @@ def test_get_hardware_resource_timestamp_property(
             mock.ANY,
             mock.ANY,
         ),
-        mock.call().NISysCfgFindHardware(
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY
-        ),
+        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgGetResourceProperty(
-            CVoidPMatcher(10), property_id, mock.ANY
-        ),
-        mock.call().NISysCfgValuesFromTimestamp(
-            TimestampMatcher(timestamp), mock.ANY, mock.ANY
-        ),
+        mock.call().NISysCfgGetResourceProperty(CVoidPMatcher(10), property_id, mock.ANY),
+        mock.call().NISysCfgValuesFromTimestamp(TimestampMatcher(timestamp), mock.ANY, mock.ANY),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
@@ -961,7 +909,7 @@ def test_hardware_resource_get_property_returns_default_when_error_code_is_not_p
 
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
-        assert resource.get_property("is_device", True) == True
+        assert resource.get_property("is_device", True) is True
 
 
 @pytest.mark.parametrize(
@@ -986,9 +934,7 @@ def test_hardware_resource_get_property_returns_default_when_error_code_is_not_p
         ),
     ],
 )
-def test_get_hardware_index_property(
-    lib_mock, property_name, count_property, expected_values
-):
+def test_get_hardware_index_property(lib_mock, property_name, count_property, expected_values):
     side_effect_functions = (
         func
         for func in [
@@ -997,12 +943,8 @@ def test_get_hardware_index_property(
         ]
     )
 
-    def next_resource_side_effect(
-        session_handle, resource_enum_handle, resource_handle
-    ):
-        return next(side_effect_functions)(
-            session_handle, resource_enum_handle, resource_handle
-        )
+    def next_resource_side_effect(session_handle, resource_enum_handle, resource_handle):
+        return next(side_effect_functions)(session_handle, resource_enum_handle, resource_handle)
 
     def get_resource_property_mock(resource_handle, property_id, property_value):
         property_value.contents.value = len(expected_values)
@@ -1019,12 +961,8 @@ def test_get_hardware_index_property(
             return nisyscfg.errors.Status.PROP_DOES_NOT_EXIST
 
     lib_mock.return_value.NISysCfgNextResource.side_effect = next_resource_side_effect
-    lib_mock.return_value.NISysCfgGetResourceProperty.side_effect = (
-        get_resource_property_mock
-    )
-    lib_mock.return_value.NISysCfgGetResourceIndexedProperty.side_effect = (
-        get_indexed_property_mock
-    )
+    lib_mock.return_value.NISysCfgGetResourceProperty.side_effect = get_resource_property_mock
+    lib_mock.return_value.NISysCfgGetResourceIndexedProperty.side_effect = get_indexed_property_mock
 
     with nisyscfg.Session() as session:
         resource = next(session.find_hardware())
@@ -1045,18 +983,12 @@ def test_get_hardware_index_property(
             mock.ANY,
             mock.ANY,
         ),
-        mock.call().NISysCfgFindHardware(
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY
-        ),
+        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
-        mock.call().NISysCfgGetResourceProperty(
-            CVoidPMatcher(10), count_property_id, mock.ANY
-        ),
+        mock.call().NISysCfgGetResourceProperty(CVoidPMatcher(10), count_property_id, mock.ANY),
     ]
     expected_calls += [
-        mock.call().NISysCfgGetResourceIndexedProperty(
-            CVoidPMatcher(10), property_id, i, mock.ANY
-        )
+        mock.call().NISysCfgGetResourceIndexedProperty(CVoidPMatcher(10), property_id, i, mock.ANY)
         for i in range(len(expected_values) + 1)
     ]
     expected_calls += [
