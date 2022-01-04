@@ -385,7 +385,7 @@ class Resource(PropertyGroup):
     EXTERNAL_CALIBRATION_LAST_LIMITED = BoolProperty(17428480)
     CALIBRATION_CURRENT_PASSWORD = StringProperty(17223680)
     CALIBRATION_NEW_PASSWORD = StringProperty(17227776)
-    SYS_CFG_ACCESS = IntProperty(219504640, enum=AccessType)
+    SYSTEM_CONFIGURATION_WEB_ACCESS = IntProperty(219504640, enum=AccessType)
     ADAPTER_TYPE = IntProperty(219332608, enum=AdapterType)
     MAC_ADDRESS = StringProperty(219168768)
     ADAPTER_MODE = IntProperty(219160576, enum=AdapterMode)
