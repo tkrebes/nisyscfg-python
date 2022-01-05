@@ -38,6 +38,8 @@ class LibraryError(Error):
 class LibraryWarning(Warning):
     def __init__(self, code, description):
         assert _is_warning(code), "Should not create Warning if code is not positive."
+        self.code = code
+        self.description = description
         if self.description:
             message = "Warning {0} occurred.\n{1}".format(str(code), description)
         else:
