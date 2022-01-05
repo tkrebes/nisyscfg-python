@@ -1018,6 +1018,9 @@ class Session(object):
         if issubclass(c_type, nisyscfg.enums.BaseEnum):
             return c_type(value.value)
 
+        if issubclass(c_type, ctypes.c_void_p):
+            return value
+
         return c_string_decode(value.value)
 
     def _set_property(self, id, value, c_type, nisyscfg_type):
