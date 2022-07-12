@@ -51,8 +51,7 @@ class PropertyAccessor(object):
         self._setter(id, value, ctypes.c_char_p, PropertyType.STRING)
 
     def set_timestamp_property(self, id, value):
-        timestamp = nisyscfg.timestamp._convert_datatime_to_ctype(value)
-        self._setter(id, timestamp, nisyscfg.types.TimestampUTC, PropertyType.TIMESTAMP)
+        self._setter(id, value, nisyscfg.types.TimestampUTC, PropertyType.TIMESTAMP)
 
     def get_bool_property(self, id):
         return self._getter(id, Bool)
@@ -70,8 +69,7 @@ class PropertyAccessor(object):
         return self._getter(id, ctypes.c_char_p)
 
     def get_timestamp_property(self, id):
-        timestamp = self._getter(id, nisyscfg.types.TimestampUTC)
-        return nisyscfg.timestamp._convert_ctype_to_datatime(timestamp)
+        return self._getter(id, nisyscfg.types.TimestampUTC)
 
     def get_indexed_bool_property(self, id, index):
         return self._indexed_getter(id, index, Bool)
@@ -89,8 +87,7 @@ class PropertyAccessor(object):
         return self._indexed_getter(id, index, ctypes.c_char_p)
 
     def get_indexed_timestamp_property(self, id, index):
-        timestamp = self._indexed_getter(id, index, nisyscfg.types.TimestampUTC)
-        return nisyscfg.timestamp._convert_ctype_to_datatime(timestamp)
+        return self._indexed_getter(id, index, nisyscfg.types.TimestampUTC)
 
 
 class TypeProperty(object):

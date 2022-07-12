@@ -12,7 +12,7 @@ import ctypes
 tai_epoch = datetime(year=1970, month=1, day=1)
 
 
-def _convert_ctype_to_datatime(timestamp: nisyscfg.types.TimestampUTC) -> datetime:
+def _convert_ctype_to_datetime(timestamp: nisyscfg.types.TimestampUTC) -> datetime:
     library = nisyscfg._library_singleton.get()
     seconds_since_tai_epoch = ctypes.c_uint64()
     fractional_seconds = ctypes.c_double()
@@ -31,7 +31,7 @@ def _convert_ctype_to_datatime(timestamp: nisyscfg.types.TimestampUTC) -> dateti
     )
 
 
-def _convert_datatime_to_ctype(timestamp: datetime) -> nisyscfg.types.TimestampUTC:
+def _convert_datetime_to_ctype(timestamp: datetime) -> nisyscfg.types.TimestampUTC:
     library = nisyscfg._library_singleton.get()
 
     time_since_tai_epoch = timestamp - tai_epoch

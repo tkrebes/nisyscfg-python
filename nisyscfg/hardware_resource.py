@@ -3,6 +3,8 @@ from functools import reduce
 import nisyscfg.errors
 import nisyscfg.properties
 import nisyscfg.pxi.properties
+import nisyscfg.timestamp
+import nisyscfg.types
 import nisyscfg.xnet.properties
 import typing
 
@@ -150,7 +152,7 @@ class HardwareResource(object):
             return c_type(value.value)
 
         if c_type == nisyscfg.types.TimestampUTC:
-            return value
+            return nisyscfg.timestamp._convert_ctype_to_datetime(value)
 
         return c_string_decode(value.value)
 
@@ -172,7 +174,7 @@ class HardwareResource(object):
             return c_type(value.value)
 
         if c_type == nisyscfg.types.TimestampUTC:
-            return value
+            return nisyscfg.timestamp._convert_ctype_to_datetime(value)
 
         return c_string_decode(value.value)
 
@@ -198,6 +200,8 @@ class HardwareResource(object):
             value = c_string_encode(value)
         elif issubclass(c_type, nisyscfg.enums.BaseEnum):
             value = ctypes.c_int(value)
+        elif c_type == nisyscfg.types.TimestampUTC:
+            value = nisyscfg.timestamp._convert_datetime_to_ctype(value)
         else:
             value = c_type(value)
 
