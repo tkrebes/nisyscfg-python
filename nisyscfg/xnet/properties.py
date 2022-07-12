@@ -16,12 +16,16 @@ from nisyscfg.xnet.enums import (
     EnetLinkSpeed,
     EnetJumboFrames,
     EnetInterruptModeration,
+    EnetSleepCapability,
+    EnetPhyPowerMode
 )
 
 
 class Resource(PropertyGroup):
     # Read-only device properties
     NUMBER_OF_PORTS = UnsignedIntProperty(167780352)
+    IP_STACK_INFO_JSON = StringProperty(167882752)
+    IP_STACK_INFO_TEXT = StringProperty(167886848)
 
     # Read-only port properties
     PORT_NUMBER = UnsignedIntProperty(167845888)
@@ -40,6 +44,8 @@ class Resource(PropertyGroup):
     ENET_OS_ADAPTER_NAME = StringProperty(167858176)
     ENET_OS_ADAPTER_DESC = StringProperty(167862272)
     ENET_LINK_SPEED = UnsignedIntProperty(167874560, EnetLinkSpeed)
+    ENET_SLEEP_CAPABILITY = UnsignedIntProperty(167911424, EnetSleepCapability)
+    ENET_PHY_POWER_MODE = UnsignedIntProperty(167915520, EnetPhyPowerMode)
 
     # Read/Write Automotive Ethernet port properties
     ENET_PHY_STATE = UnsignedIntProperty(167837696, EnetPhyState)
@@ -47,6 +53,7 @@ class Resource(PropertyGroup):
     ENET_LINK_SPEED_CONFIGURED = UnsignedIntProperty(167866368, EnetLinkSpeed)
     ENET_JUMBO_FRAMES = UnsignedIntProperty(167903232, EnetJumboFrames)
     ENET_INTERRUPT_MODERATION = IntProperty(167878656, EnetInterruptModeration)
+    ENET_SLEEP_CAPABILITY_CONFIGURED = UnsignedIntProperty(167907328, EnetSleepCapability)
 
 
 class Filter(PropertyGroup):

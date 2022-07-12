@@ -66,3 +66,13 @@ class EnetInterruptModeration(BaseEnum):
     LOW = 1
     MEDIUM = 2
     HIGH = 3
+
+
+class EnetSleepCapability(BaseEnum):
+    DISABLED_OR_NOT_AVAILABLE = 0,
+    ENABLED = 1
+
+
+class EnetPhyPowerMode(BaseEnum):
+    NORMAL = 0,
+    SLEEP = 1
