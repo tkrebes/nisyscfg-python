@@ -21,7 +21,7 @@ class Protocol(BaseEnum):
     FLEXRAY = 1
     LIN = 2
     ETHERNET = 3
-    UNKNOWN = -2
+    UNKNOWN = 0xFFFFFFFE
 
 
 class CanTransceiverCapability(BaseEnum):
