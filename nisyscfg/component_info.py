@@ -36,7 +36,7 @@ class ComponentInfoIterator(object):
         id = nisyscfg.types.simple_string()
         version = nisyscfg.types.simple_string()
         title = nisyscfg.types.simple_string()
-        item_type = nisyscfg.types.ctypes.c_long()
+        item_type = nisyscfg.types.ctypes.c_int()
         c_details = ctypes.POINTER(ctypes.c_char)()
         error_code = self._library.NextComponentInfo(
             self._handle, id, version, title, ctypes.pointer(item_type), c_details
