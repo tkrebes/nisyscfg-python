@@ -9,6 +9,7 @@ class EnetPortMode(BaseEnum):
 class EnetPhyState(BaseEnum):
     SLAVE = 0
     MASTER = 1
+    AUTO = 2
 
 
 class Blink(BaseEnum):
@@ -29,6 +30,7 @@ class CanTransceiverCapability(BaseEnum):
     LS = 1
     XS = 3
     XS_WITH_HS_OR_LS = 4
+    UNKNOWN = 0xFFFFFFFF
 
 
 class DongleId(BaseEnum):
