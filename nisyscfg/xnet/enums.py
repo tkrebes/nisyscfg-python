@@ -20,6 +20,7 @@ class Protocol(BaseEnum):
     CAN = 0
     FLEXRAY = 1
     LIN = 2
+    ETHERNET = 3
     UNKNOWN = -2
 
 
