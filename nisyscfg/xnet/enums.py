@@ -9,6 +9,7 @@ class EnetPortMode(BaseEnum):
 class EnetPhyState(BaseEnum):
     SLAVE = 0
     MASTER = 1
+    AUTO = 2
 
 
 class Blink(BaseEnum):
@@ -20,7 +21,8 @@ class Protocol(BaseEnum):
     CAN = 0
     FLEXRAY = 1
     LIN = 2
-    UNKNOWN = -2
+    ETHERNET = 3
+    UNKNOWN = 0xFFFFFFFE
 
 
 class CanTransceiverCapability(BaseEnum):
@@ -28,6 +30,7 @@ class CanTransceiverCapability(BaseEnum):
     LS = 1
     XS = 3
     XS_WITH_HS_OR_LS = 4
+    UNKNOWN = 0xFFFFFFFF
 
 
 class DongleId(BaseEnum):
@@ -66,3 +69,13 @@ class EnetInterruptModeration(BaseEnum):
     LOW = 1
     MEDIUM = 2
     HIGH = 3
+
+
+class EnetSleepCapability(BaseEnum):
+    DISABLED_OR_NOT_AVAILABLE = 0,
+    ENABLED = 1
+
+
+class EnetPhyPowerMode(BaseEnum):
+    NORMAL = 0,
+    SLEEP = 1

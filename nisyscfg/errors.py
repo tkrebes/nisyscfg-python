@@ -41,9 +41,9 @@ class LibraryWarning(Warning):
         self.code = code
         self.description = description
         if self.description:
-            message = "Warning {0} occurred.\n{1}".format(str(code), description)
+            message = "Warning {0}: {1}".format(str(self.code), self.description)
         else:
-            message = "Warning {0} occurred.".format(str(code))
+            message = "Warning {0}:".format(str(self.code))
         super(LibraryWarning, self).__init__(message)
 
 

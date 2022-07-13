@@ -1,4 +1,5 @@
 import ctypes
+import hightime
 import nisyscfg as nisyscfg
 import nisyscfg.enums
 import nisyscfg.errors
@@ -999,12 +1000,57 @@ def test_get_hardware_index_property(lib_mock, property_name, count_property, ex
     assert lib_mock.mock_calls == expected_calls
 
 
-def test_sesssion_has_resource(lib_mock):
+def test_set_hardware_resource_timestamp_property(
+    lib_mock,
+    config_next_resource_side_effect_mock,
+):
+
+    ctypes_timestamp = nisyscfg.types.TimestampUTC(100, 200, 300, 400)  # random values
+
+    def timestamp_from_values_side_effect(secondsSinceEpoch1970, fractionalSeconds, timestamp):
+        timestamp.contents[:] = ctypes_timestamp
+        return nisyscfg.errors.Status.OK
+
+    lib_mock.NISysCfgSetResourceProperty.return_value = nisyscfg.errors.Status.OK
+
+    lib_mock.return_value.NISysCfgTimestampFromValues.side_effect = (
+        timestamp_from_values_side_effect
+    )
+    property_id = nisyscfg.properties.Resource.CURRENT_TIME._id
+
+    with nisyscfg.Session() as session:
+        resource = next(session.find_hardware())
+        resource.current_time = nisyscfg.timestamp.tai_epoch + hightime.timedelta(seconds=100)
+
+    expected_calls = [
+        mock.call(mock.ANY),
+        mock.call().NISysCfgInitializeSession(
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+        ),
+        mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
+        mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
+        mock.call().NISysCfgTimestampFromValues(100, 0.0, mock.ANY),
+        mock.call().NISysCfgSetResourceProperty(CVoidPMatcher(10), property_id, TimestampMatcher(ctypes_timestamp)),
+        mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
+        mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
+        mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),
+    ]
+    assert lib_mock.mock_calls == expected_calls
+
+
+def test_session_has_resource(lib_mock):
     with nisyscfg.Session() as session:
         assert "resource" in dir(session)
 
 
-def test_sesssion_resource_has_pxi(lib_mock):
+def test_session_resource_has_pxi(lib_mock):
     with nisyscfg.Session() as session:
         assert "pxi" in dir(session.resource)
 
@@ -1014,17 +1060,17 @@ def test_sesssion_resource_pxi_has_fan_mode(lib_mock):
         assert "fan_mode" in dir(session.resource.pxi)
 
 
-def test_sesssion_resource_pxi_has_power_supply_name(lib_mock):
+def test_session_resource_pxi_has_power_supply_name(lib_mock):
     with nisyscfg.Session() as session:
         assert "power_supply_name" in dir(session.resource.pxi)
 
 
-def test_sesssion_resource_has_xnet(lib_mock):
+def test_session_resource_has_xnet(lib_mock):
     with nisyscfg.Session() as session:
         assert "xnet" in dir(session.resource)
 
 
-def test_sesssion_resource_xnet_has_protocol(lib_mock):
+def test_session_resource_xnet_has_protocol(lib_mock):
     with nisyscfg.Session() as session:
         assert "protocol" in dir(session.resource.xnet)
 
