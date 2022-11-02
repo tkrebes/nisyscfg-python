@@ -72,10 +72,10 @@ class EnetInterruptModeration(BaseEnum):
 
 
 class EnetSleepCapability(BaseEnum):
-    DISABLED_OR_NOT_AVAILABLE = 0,
+    DISABLED_OR_NOT_AVAILABLE = 0
     ENABLED = 1
 
 
 class EnetPhyPowerMode(BaseEnum):
-    NORMAL = 0,
+    NORMAL = 0
     SLEEP = 1
