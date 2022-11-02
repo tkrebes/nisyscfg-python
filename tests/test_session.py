@@ -1037,7 +1037,9 @@ def test_set_hardware_resource_timestamp_property(
         mock.call().NISysCfgFindHardware(mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgNextResource(mock.ANY, mock.ANY, mock.ANY),
         mock.call().NISysCfgTimestampFromValues(100, 0.0, mock.ANY),
-        mock.call().NISysCfgSetResourceProperty(CVoidPMatcher(10), property_id, TimestampMatcher(ctypes_timestamp)),
+        mock.call().NISysCfgSetResourceProperty(
+            CVoidPMatcher(10), property_id, TimestampMatcher(ctypes_timestamp)
+        ),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(10)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(RESOURCE_ENUM_HANDLE)),
         mock.call().NISysCfgCloseHandle(CVoidPMatcher(SESSION_HANDLE)),

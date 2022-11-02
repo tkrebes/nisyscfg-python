@@ -17,7 +17,7 @@ from nisyscfg.xnet.enums import (
     EnetJumboFrames,
     EnetInterruptModeration,
     EnetSleepCapability,
-    EnetPhyPowerMode
+    EnetPhyPowerMode,
 )
 
 
