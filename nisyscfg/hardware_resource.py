@@ -116,7 +116,9 @@ class HardwareResource(object):
         """
         Returns a name that identifies a resource
         """
-        name = self.expert_user_alias[0]
+        name = None
+        if self.has_property("expert_user_alias", 0):
+            name = self.expert_user_alias[0]
         # If the resource doesn't have an alias, use the resource name instead
         if not name:
             name = self.expert_resource_name[0]
@@ -194,6 +196,23 @@ class HardwareResource(object):
             ):
                 raise
             return default
+
+    def has_property(self, name, index=None):
+        """
+        Returns True if the hardware resource property exists; otherwise, returns False
+        """
+        property_exists = False
+        try:
+            property = reduce(getattr, name.split("."), self)
+            if index is not None:
+                property[index]
+            property_exists = True
+        except nisyscfg.errors.LibraryError as err:
+            if err.code != nisyscfg.errors.Status.PROP_DOES_NOT_EXIST:
+                raise
+        except IndexError:
+            ...
+        return property_exists
 
     def _set_property(self, id, value, c_type, nisyscfg_type):
         if c_type == ctypes.c_char_p:
