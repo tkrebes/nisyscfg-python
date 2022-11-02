@@ -1,0 +1,26 @@
+name: Test Building Python Package
+
+on: [push, pull_request]
+
+jobs:
+  build-and-upload-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install setuptools and other tools
+        run: python3 -m pip install setuptools wheel twine
+
+      - name: Build packages
+        run: python3 setup.py bdist_wheel
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build artifacts
+          path: dist/
