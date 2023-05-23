@@ -30,7 +30,9 @@ class Filter(object):
     def _set_property_with_type(self, id, value, c_type, nisyscfg_type):
         if c_type == ctypes.c_char_p:
             value = c_string_encode(value)
-        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum) or issubclass(
+            c_type, nisyscfg.enums.BaseFlag
+        ):
             value = ctypes.c_int(value)
         else:
             value = c_type(value)
