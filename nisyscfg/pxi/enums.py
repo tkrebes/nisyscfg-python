@@ -1,4 +1,4 @@
-from nisyscfg.enums import BaseEnum
+from nisyscfg.enums import BaseEnum, BaseFlag
 
 
 class Clock10Sources(BaseEnum):
@@ -28,7 +28,7 @@ class PxiHighDensityTrigPortState(BaseEnum):
     LOOPBACK = 3  #: 2 High Density Trigger ports on the device are connected to each other
 
 
-class FanModes(BaseEnum):
+class FanModes(BaseFlag):
     AUTO = 1  #: Default operating mode
     SAFE_MANUAL = (
         2  #: Allows caller to manipulate the fan speed within safe boundaries by setting FanUserRpm
@@ -36,7 +36,7 @@ class FanModes(BaseEnum):
     HIGH = 4  #: Fans run at the maximum speed for the current cooling profile
 
 
-class CoolingProfiles(BaseEnum):
+class CoolingProfiles(BaseFlag):
     WATTS_38 = 1  #: Default operating mode
     WATTS_58 = (
         2  #: More aggressive cooling profile for cooling modules requiring 58W or less of cooling
@@ -88,7 +88,7 @@ class PowerSupplyStates(BaseEnum):
     ALERT_FAN = 61
 
 
-class InhibitModes(BaseEnum):
+class InhibitModes(BaseFlag):
     DEFAULT = 1  #: Chassis power controlled by the power button and OS
     MANUAL = 2  #: Chassis power controlled by the Remote Inhibit signal
 
@@ -99,7 +99,7 @@ class CalExtActions(BaseEnum):
     COMMIT = 2
 
 
-class ChassisLedBlinkPattern(BaseEnum):
+class ChassisLedBlinkPattern(BaseFlag):
     CHASSIS_CONTROLLED = 1
     ONE_BLINK = 2
     THREE_BLINK_BLINK_BLINK = 4

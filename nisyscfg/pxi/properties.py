@@ -1,5 +1,4 @@
 from nisyscfg.properties import (
-    BitmaskProperty,
     BoolProperty,
     IndexedDoubleProperty,
     IndexedStringProperty,
@@ -44,12 +43,12 @@ class Resource(PropertyGroup):
     # Fan control attributes
     FAN_MODE = UnsignedIntProperty(185597952, FanModes)
     FAN_USER_RPM = UnsignedIntProperty(185602048)
-    SUPPORTED_FAN_MODES = BitmaskProperty(185606144, FanModes)
+    SUPPORTED_FAN_MODES = UnsignedIntProperty(185606144, FanModes)
     FAN_MANUAL_RPM_LOWER_BOUND = UnsignedIntProperty(185634816)
     FAN_MANUAL_RPM_UPPER_BOUND = UnsignedIntProperty(185638912)
     COOLING_PROFILE = UnsignedIntProperty(185610240, CoolingProfiles)
     COOLING_PROFILE_SOURCE = IntProperty(185663488, CoolingProfileSource)
-    SUPPORTED_COOLING_PROFILES = BitmaskProperty(185614336, CoolingProfiles)
+    SUPPORTED_COOLING_PROFILES = UnsignedIntProperty(185614336, CoolingProfiles)
     # Honors a cooling profile user setting that is lower than a module
     # request when the module can accommodate the request by reducing
     # performance or functionality. A reboot may be required to take effect. */
@@ -59,7 +58,7 @@ class Resource(PropertyGroup):
     POWER_SUPPLY_BAY_COUNT = IntProperty(186777600)
     POWER_SUPPLIES_REDUNDANT = UnsignedIntProperty(186798080)
     INHIBIT_MODE = UnsignedIntProperty(186806272, InhibitModes)
-    SUPPORTED_INHIBIT_MODES = BitmaskProperty(186810368, InhibitModes)
+    SUPPORTED_INHIBIT_MODES = UnsignedIntProperty(186810368, InhibitModes)
 
     # Calibration attributes
     CAL_EXT_ACTION = UnsignedIntProperty(186908672, CalExtActions)

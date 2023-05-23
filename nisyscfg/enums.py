@@ -1,9 +1,15 @@
 # This file is code generated
 
-from enum import IntEnum
+from enum import IntEnum, IntFlag
 
 
 class BaseEnum(IntEnum):
+    @classmethod
+    def from_param(cls, obj):
+        return int(obj)
+
+
+class BaseFlag(IntFlag):
     @classmethod
     def from_param(cls, obj):
         return int(obj)

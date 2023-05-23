@@ -138,7 +138,9 @@ class HardwareResource(object):
         if c_type == ctypes.c_char_p:
             value = nisyscfg.types.simple_string()
             value_arg = value
-        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum) or issubclass(
+            c_type, nisyscfg.enums.BaseFlag
+        ):
             value = ctypes.c_int()
             value_arg = ctypes.pointer(value)
         else:
@@ -148,7 +150,9 @@ class HardwareResource(object):
         error_code = self._library.GetResourceProperty(self._handle, id, value_arg)
         nisyscfg.errors.handle_error(self, error_code)
 
-        if issubclass(c_type, nisyscfg.enums.BaseEnum):
+        if issubclass(c_type, nisyscfg.enums.BaseEnum) or issubclass(
+            c_type, nisyscfg.enums.BaseFlag
+        ):
             return c_type(value.value)
 
         if c_type == nisyscfg.types.TimestampUTC:
@@ -160,7 +164,9 @@ class HardwareResource(object):
         if c_type == ctypes.c_char_p:
             value = nisyscfg.types.simple_string()
             value_arg = value
-        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum) or issubclass(
+            c_type, nisyscfg.enums.BaseFlag
+        ):
             value = ctypes.c_int()
             value_arg = ctypes.pointer(value)
         else:
@@ -170,7 +176,9 @@ class HardwareResource(object):
         error_code = self._library.GetResourceIndexedProperty(self._handle, id, index, value_arg)
         nisyscfg.errors.handle_error(self, error_code)
 
-        if issubclass(c_type, nisyscfg.enums.BaseEnum):
+        if issubclass(c_type, nisyscfg.enums.BaseEnum) or issubclass(
+            c_type, nisyscfg.enums.BaseFlag
+        ):
             return c_type(value.value)
 
         if c_type == nisyscfg.types.TimestampUTC:
@@ -198,7 +206,9 @@ class HardwareResource(object):
     def _set_property(self, id, value, c_type, nisyscfg_type):
         if c_type == ctypes.c_char_p:
             value = c_string_encode(value)
-        elif issubclass(c_type, nisyscfg.enums.BaseEnum):
+        elif issubclass(c_type, nisyscfg.enums.BaseEnum) or issubclass(
+            c_type, nisyscfg.enums.BaseFlag
+        ):
             value = ctypes.c_int(value)
         elif c_type == nisyscfg.types.TimestampUTC:
             value = nisyscfg.timestamp._convert_datetime_to_ctype(value)
