@@ -25,6 +25,7 @@ from nisyscfg.pxi.enums import (
 class Resource(PropertyGroup):
     # Chassis attributes
     PXI_CHASSIS_NUMBER = UnsignedIntProperty(184565760)
+    CHASSIS_LED_BLINK_PATTERN = UnsignedIntProperty(184655872)
 
     # Clock attributes
     CLK10_SOURCE = IntProperty(184635392, Clock10Sources)
