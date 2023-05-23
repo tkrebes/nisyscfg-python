@@ -32,7 +32,7 @@ setup(
     license="MIT",
     include_package_data=True,
     packages=find_packages(),
-    python_requires='>=3.7',
+    python_requires=">=3.7",
     install_requires=[
         "hightime",
         "six",

@@ -1004,7 +1004,6 @@ def test_set_hardware_resource_timestamp_property(
     lib_mock,
     config_next_resource_side_effect_mock,
 ):
-
     ctypes_timestamp = nisyscfg.types.TimestampUTC(100, 200, 300, 400)  # random values
 
     def timestamp_from_values_side_effect(secondsSinceEpoch1970, fractionalSeconds, timestamp):

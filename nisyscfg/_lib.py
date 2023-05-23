@@ -10,7 +10,6 @@ if sys.platform.startswith("win"):
     def get_syscfg_locale():
         return locale.getlocale()[1] or locale.getdefaultlocale()[1] or "ascii"
 
-
 else:
     # On other OSes, nisyscfg uses ISO-8859-1 (Latin1) for the decoding of C-strings
     def get_syscfg_locale():

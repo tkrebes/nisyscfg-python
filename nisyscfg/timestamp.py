@@ -49,9 +49,9 @@ def _convert_datetime_to_ctype(timestamp: datetime) -> nisyscfg.types.TimestampU
         time_since_tai_epoch = timestamp - tai_epoch
         seconds_since_tai_epoch = time_since_tai_epoch.days * 86400 + time_since_tai_epoch.seconds
         fractional_seconds = (
-            (time_since_tai_epoch.microseconds / 10 ** 6)
-            + (time_since_tai_epoch.femtoseconds / 10 ** 15)
-            + (time_since_tai_epoch.yoctoseconds / 10 ** 24)
+            (time_since_tai_epoch.microseconds / 10**6)
+            + (time_since_tai_epoch.femtoseconds / 10**15)
+            + (time_since_tai_epoch.yoctoseconds / 10**24)
         )
         timestamp = nisyscfg.types.TimestampUTC()
 

@@ -27,7 +27,6 @@ from typing import List, Union
 
 
 class PropertyAccessor(object):
-
     __slots__ = "_getter", "_setter", "_indexed_getter"
 
     def __init__(self, setter=None, getter=None, indexed_getter=None):
@@ -91,7 +90,6 @@ class PropertyAccessor(object):
 
 
 class TypeProperty(object):
-
     __slots__ = "_id", "_enum", "_readable", "_writeable"
 
     def __init__(self, id, enum=None, *, readable: bool = True, writeable: bool = True):
@@ -102,7 +100,6 @@ class TypeProperty(object):
 
 
 class BoolProperty(TypeProperty):
-
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor):
@@ -116,7 +113,6 @@ class BoolProperty(TypeProperty):
 
 
 class IntProperty(TypeProperty):
-
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor):
@@ -130,7 +126,6 @@ class IntProperty(TypeProperty):
 
 
 class UnsignedIntProperty(TypeProperty):
-
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor):
@@ -143,19 +138,7 @@ class UnsignedIntProperty(TypeProperty):
         accessor.set_unsigned_int_property(self._id, value)
 
 
-class BitmaskProperty(TypeProperty):
-
-    __slots__ = ()
-
-    def get(self, accessor: PropertyAccessor):
-        value = accessor.get_unsigned_int_property(self._id)
-        if self._enum:
-            return [mask for mask in self._enum if value & mask]
-        return [value]
-
-
 class DoubleProperty(TypeProperty):
-
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor) -> float:
@@ -166,7 +149,6 @@ class DoubleProperty(TypeProperty):
 
 
 class StringProperty(TypeProperty):
-
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor) -> str:
@@ -177,7 +159,6 @@ class StringProperty(TypeProperty):
 
 
 class TimestampProperty(TypeProperty):
-
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor):
@@ -221,7 +202,6 @@ class IndexedPropertyItems(object):
 
     def __iter__(self):
         class IndexedPropertyItemsIter(object):
-
             __slots__ = "_properties", "_index"
 
             def __init__(self, properties):
@@ -242,7 +222,6 @@ class IndexedPropertyItems(object):
 
 
 class IndexedProperty(TypeProperty):
-
     __slots__ = ("_count_property",)
 
     def __init__(
@@ -263,7 +242,6 @@ class IndexedProperty(TypeProperty):
 
 
 class IndexedBoolProperty(IndexedProperty):
-
     __slots__ = ()
 
     def get_index(self, accessor: PropertyAccessor, index: int):
@@ -274,7 +252,6 @@ class IndexedBoolProperty(IndexedProperty):
 
 
 class IndexedIntProperty(IndexedProperty):
-
     __slots__ = ()
 
     def get_index(self, accessor: PropertyAccessor, index: int):
@@ -285,7 +262,6 @@ class IndexedIntProperty(IndexedProperty):
 
 
 class IndexedUnsignedIntProperty(IndexedProperty):
-
     __slots__ = ()
 
     def get_index(self, accessor: PropertyAccessor, index: int):
@@ -296,7 +272,6 @@ class IndexedUnsignedIntProperty(IndexedProperty):
 
 
 class IndexedDoubleProperty(IndexedProperty):
-
     __slots__ = ()
 
     def get_index(self, accessor: PropertyAccessor, index: int):
@@ -304,7 +279,6 @@ class IndexedDoubleProperty(IndexedProperty):
 
 
 class IndexedStringProperty(IndexedProperty):
-
     __slots__ = ()
 
     def get_index(self, accessor: PropertyAccessor, index: int):
@@ -312,7 +286,6 @@ class IndexedStringProperty(IndexedProperty):
 
 
 class IndexedTimestampProperty(IndexedProperty):
-
     __slots__ = ()
 
     def get_index(self, accessor: PropertyAccessor, index: int):
@@ -558,7 +531,6 @@ class Filter(PropertyGroup):
 
 
 class Property(object):
-
     __slots__ = ("_type_property",)
 
     def __init__(self, type_property: TypeProperty):
