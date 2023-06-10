@@ -49,7 +49,7 @@ The following is a basic example of using an **nisyscfg.Session** object.
   >>>     # Print user aliases for all National Instruments devices in the local system
   >>>     filter = session.create_filter()
   >>>     filter.is_present = True
-  >>>     filter.is_in_product = True
+  >>>     filter.is_ni_product = True
   >>>     filter.is_device = True
   >>>     for resource in session.find_hardware(filter):
   >>>         print(resource.expert_user_alias[0])
