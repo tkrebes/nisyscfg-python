@@ -307,6 +307,36 @@ class HardwareResource(object):
 
         return SaveChangesResult(restart_required=restart_required.value != 0, details=details)
 
+    def self_calibrate(self):
+        """
+        Performs a self-calibration on a device.
+
+        Self-calibration adjusts the calibration constants with respect to an
+        onboard reference stored on the device. The new calibration constants
+        are defined with respect to the calibration constants created during an
+        external calibration to ensure that the measurements are traceable to
+        these external standards. The new calibration constants do not affect
+        the constants created during an external calibration because they are
+        stored in a different area of the device memory. You can perform a self-
+        calibration at any time to adjust the device for use in environments
+        other than those in which the device was externally calibrated.
+
+        Returns a string containing results of any errors that may have occurred
+        during execution.
+
+        Raises an nisyscfg.errors.LibraryError exception in the event of an
+        error.
+        """
+        c_details = ctypes.POINTER(ctypes.c_char)()
+        error_code = self._library.SelfCalibrateHardware(self._handle, ctypes.pointer(c_details))
+        if c_details:
+            details = c_string_decode(ctypes.cast(c_details, ctypes.c_char_p).value)
+            error_code_2 = self._library.FreeDetailedString(c_details)
+        nisyscfg.errors.handle_error(self, error_code)
+        nisyscfg.errors.handle_error(self, error_code_2)
+
+        return details
+
     def self_test(self, mode=0):
         """
         Verifies that system devices are able to perform basic I/O functions.
