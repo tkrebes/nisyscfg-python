@@ -217,7 +217,7 @@ def test_open_close_session_invokes_nisyscfg_c_api(lib_mock):
     session = nisyscfg.Session()
     session.close()
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -237,7 +237,7 @@ def test_session_in_with_statement_invokes_nisyscfg_c_api(lib_mock):
     with nisyscfg.Session():
         pass
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -295,7 +295,7 @@ def test__get_status_description(lib_mock):
             nisyscfg.errors.Status.OUT_OF_MEMORY
         )
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -321,7 +321,7 @@ def test_get_system_experts_with_no_experts(lib_mock):
     with nisyscfg.Session() as session:
         session.get_system_experts()
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -365,7 +365,7 @@ def test_get_system_experts_with_two_experts(lib_mock):
     with nisyscfg.Session() as session:
         expert_info = list(session.get_system_experts())
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -421,7 +421,7 @@ def test_find_hardware_with_default_arguments(lib_mock):
     with nisyscfg.Session() as session:
         session.find_hardware()
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -451,7 +451,7 @@ def test_find_hardware_with_filter_properties_specified(lib_mock):
         filter.expert_name = "my_expert"
         session.find_hardware(filter)
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -525,7 +525,7 @@ def test_find_hardware_with_passed_filter_properties_specified(
         session.find_hardware(filter)
         property_id = getattr(nisyscfg.properties.Filter, property_name)._id
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -558,7 +558,7 @@ def test_create_filter(lib_mock):
     with nisyscfg.Session() as session:
         session.create_filter()
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -581,7 +581,7 @@ def test_create_filter_and_set_syscfg_filter_property(lib_mock):
         filter = session.create_filter()
         filter.expert_name = "my_expert"
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -609,7 +609,7 @@ def test_restart_with_default_arguments(lib_mock):
     with nisyscfg.Session() as session:
         session.restart()
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -632,7 +632,7 @@ def test_get_available_software_components_with_default_arguments(lib_mock):
     with nisyscfg.Session() as session:
         session.get_available_software_components()
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -656,7 +656,7 @@ def test_get_installed_software_components_with_default_arguments(lib_mock):
     with nisyscfg.Session() as session:
         session.get_installed_software_components()
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -697,7 +697,7 @@ def test_interating_over_hardware_resources(lib_mock):
         assert len(resources) == 3
 
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -762,7 +762,7 @@ def test_get_hardware_resource_property(
         property_id = getattr(nisyscfg.properties.Resource, property_name)._id
 
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -812,7 +812,7 @@ def test_get_hardware_resource_timestamp_property(
         property_id = nisyscfg.properties.Resource.CURRENT_TIME._id
 
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -973,7 +973,7 @@ def test_get_hardware_index_property(lib_mock, property_name, count_property, ex
         property_id = getattr(nisyscfg.properties.IndexedResource, property_name)._id
 
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,
@@ -1022,7 +1022,7 @@ def test_set_hardware_resource_timestamp_property(
         resource.current_time = nisyscfg.timestamp.tai_epoch + hightime.timedelta(seconds=100)
 
     expected_calls = [
-        mock.call(mock.ANY),
+        mock.call(mock.ANY, mock.ANY),
         mock.call().NISysCfgInitializeSession(
             mock.ANY,
             mock.ANY,

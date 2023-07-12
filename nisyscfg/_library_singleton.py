@@ -57,12 +57,14 @@ def get():
                 library_type = _get_library_type()
                 if library_type == "dual":
                     ctypes_library = CTypesLibrary(
-                        ctypes.CDLL(_get_library_name()),
+                        ctypes.CDLL(_get_library_name(), ctypes.RTLD_GLOBAL),
                         ctypes.WinDLL(_get_library_name()),
                     )
                 else:
                     assert library_type == "cdll"
-                    ctypes_library = CTypesLibrary(ctypes.CDLL(_get_library_name()))
+                    ctypes_library = CTypesLibrary(
+                        ctypes.CDLL(_get_library_name(), ctypes.RTLD_GLOBAL)
+                    )
             except OSError:
                 raise errors.LibraryNotInstalledError()
             _instance = _library.Library(ctypes_library)
