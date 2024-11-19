@@ -251,8 +251,10 @@ class LedState(BaseEnum):
     OFF = 0
     SOLID_GREEN = 1
     SOLID_YELLOW = 2
+    SOLID_RED = 16
     BLINKING_GREEN = 4
     BLINKING_YELLOW = 8
+    BLINKING_RED = 32
 
 
 class SwitchState(BaseEnum):
