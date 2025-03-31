@@ -49,7 +49,6 @@ def _get_library_type():
 
 def get():
     global _instance
-    global _instance_lock
 
     with _instance_lock:
         if _instance is None:
