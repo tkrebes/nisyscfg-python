@@ -1,4 +1,6 @@
 import ctypes
+import pathlib
+
 import hightime
 import nisyscfg as nisyscfg
 import nisyscfg.enums
@@ -112,9 +114,9 @@ def initialize_session_mock(
 
 
 def _get_status_description_mock(session_handle, status, detailed_description):
-    ctypes.cast(
-        detailed_description, ctypes.POINTER(ctypes.c_void_p)
-    ).contents.value = STATUS_DESCRIPTION_VOID_P.value
+    ctypes.cast(detailed_description, ctypes.POINTER(ctypes.c_void_p)).contents.value = (
+        STATUS_DESCRIPTION_VOID_P.value
+    )
     return nisyscfg.errors.Status.OK
 
 
@@ -1086,3 +1088,68 @@ def test_filter_xnet_has_protocol(lib_mock):
     with nisyscfg.Session() as session:
         filter = session.create_filter()
         assert "protocol" in dir(filter.xnet)
+
+
+def test_session_set_system_image_with_folder(lib_mock, tmp_path):
+    lib_mock.return_value.NISysCfgSetSystemImageFromFolder2.return_value = nisyscfg.errors.Status.OK
+
+    with nisyscfg.Session() as session:
+        session.set_system_image(tmp_path)
+
+    expected_calls = [
+        mock.call(mock.ANY, mock.ANY),
+        mock.call().NISysCfgInitializeSession(
+            mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY
+        ),
+        mock.call().NISysCfgSetSystemImageFromFolder2(
+            CVoidPMatcher(SESSION_HANDLE),
+            True,
+            str(tmp_path).encode("ascii"),
+            None,
+            0,
+            None,
+            False,
+            nisyscfg.enums.NetworkInterfaceSettings.PRESERVE_PRIMARY_PRESERVE_OTHERS,
+        ),
+        mock.call().NISysCfgCloseHandle(mock.ANY),
+    ]
+    assert lib_mock.mock_calls == expected_calls
+
+
+def test_session_set_system_image_with_file(lib_mock, tmp_path):
+    lib_mock.return_value.NISysCfgSetSystemImageFromFolder2.return_value = nisyscfg.errors.Status.OK
+    system_image_path = pathlib.Path(__file__).parent / "mock_system_image.zip"
+
+    with mock.patch("tempfile.TemporaryDirectory") as mock_tempdir:
+        mock_tempdir.return_value.__enter__.return_value = tmp_path
+        with nisyscfg.Session() as session:
+            session.set_system_image(system_image_path)
+
+    expected_calls = [
+        mock.call(mock.ANY, mock.ANY),
+        mock.call().NISysCfgInitializeSession(
+            mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY, mock.ANY
+        ),
+        mock.call().NISysCfgSetSystemImageFromFolder2(
+            CVoidPMatcher(SESSION_HANDLE),
+            True,
+            str(tmp_path).encode("ascii"),
+            None,
+            0,
+            None,
+            False,
+            nisyscfg.enums.NetworkInterfaceSettings.PRESERVE_PRIMARY_PRESERVE_OTHERS,
+        ),
+        mock.call().NISysCfgCloseHandle(mock.ANY),
+    ]
+    assert lib_mock.mock_calls == expected_calls
+
+
+def test_session_set_system_image_with_invalid_file(lib_mock, tmp_path):
+    system_image_path = pathlib.Path(__file__).parent / "mock_invalid_system_image.bin"
+
+    with mock.patch("tempfile.TemporaryDirectory") as mock_tempdir:
+        mock_tempdir.return_value.__enter__.return_value = tmp_path
+        with nisyscfg.Session() as session:
+            with pytest.raises(nisyscfg.errors.InvalidSystemImageError):
+                session.set_system_image(system_image_path)
