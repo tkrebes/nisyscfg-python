@@ -27,7 +27,7 @@ setup(
     author="National Instruments",
     url="https://github.com/tkrebes/nisyscfg-python",
     maintainer="Tyler Krehbiel",
-    maintainer_email="tyler.krehbiel@ni.com",
+    maintainer_email="tyler.krehbiel@emerson.com",
     keywords=[pypi_name, "syscfg"],
     license="MIT",
     include_package_data=True,
