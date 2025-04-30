@@ -1,8 +1,12 @@
-NI System Configuration Python API
-==================================
-Python bindings for NI System Configuration. See `GitHub <https://github.com/tkrebes/nisyscfg-python/>`_ for the latest source.
++------------+-----------------------------------------------------------+
+| **Info**   | NI System Configuration Python API                        |
++------------+-----------------------------------------------------------+
+| **Author** | National Instruments                                      |
++------------+-----------------------------------------------------------+
 
-Author: National Instruments
+.. contents:: Table of Contents
+   :depth: 1
+   :backlinks: none
 
 About
 =====
