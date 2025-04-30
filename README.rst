@@ -1,8 +1,12 @@
-NI System Configuration Python API
-==================================
-Python bindings for NI System Configuration. See `GitHub <https://github.com/tkrebes/nisyscfg-python/>`_ for the latest source.
++------------+-----------------------------------------------------------+
+| **Info**   | NI System Configuration Python API                        |
++------------+-----------------------------------------------------------+
+| **Author** | National Instruments                                      |
++------------+-----------------------------------------------------------+
 
-Author: National Instruments
+.. contents:: Table of Contents
+   :depth: 1
+   :backlinks: none
 
 About
 =====
@@ -15,7 +19,7 @@ object-oriented wrapper around the NI System Configuration C API using the
 
 **nisyscfg** supports only the Windows and Linux operating systems.
 
-**nisyscfg** supports CPython 3.7+.
+**nisyscfg** supports CPython 3.9+.
 
 Installation
 ============
