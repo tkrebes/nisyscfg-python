@@ -23,6 +23,10 @@ class Error(Exception):
         super(Error, self).__init__(message)
 
 
+class InvalidSystemImageError(Error):
+    """This error is raised when the system image is invalid."""
+
+
 class LibraryError(Error):
     def __init__(self, code, description):
         assert _is_error(code), "Should not raise Error if code is not fatal."

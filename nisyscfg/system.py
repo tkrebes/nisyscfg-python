@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 import ctypes
+import pathlib
+import tempfile
+import zipfile
+from contextlib import ExitStack
 
 import nisyscfg
 import nisyscfg._library_singleton
@@ -1066,3 +1072,75 @@ class Session(object):
         nisyscfg.errors.handle_error(self, error_code)
         nisyscfg.errors.handle_error(self, error_code_2)
         return SaveChangesResult(restart_required=restart_required.value != 0, details=details)
+
+    def set_system_image(
+        self,
+        source: str | pathlib.Path,
+        auto_restart: bool = True,
+        encryption_passphrase: str | None = None,
+        exclude_paths: List[str] | None = None,
+        original_system_only: bool = False,
+        network_settings: nisyscfg.enums.NetworkInterfaceSettings = nisyscfg.enums.NetworkInterfaceSettings.PRESERVE_PRIMARY_PRESERVE_OTHERS,
+    ) -> None:
+        """Applies an image to a system.
+
+        The system image is a copy of the contents and software on the primary
+        hard drive of a specified target system. Applying the image to the
+        system restores it to the state captured when the image was created.
+        This image can exist as a folder or a zipped archive.
+
+        source - The path to the system image file or folder.
+
+        auto_restart - Restarts the system into install mode by default before
+        the operation is performed, and restarts back to a running state after
+        the operation is complete. If you choose not to restart automatically,
+        and the system is not in install mode, the resulting image may not be
+        valid.
+
+        encryption_passphrase - A passphrase used to encrypt a portion of the
+        image that contains sensitive information.
+
+        exclude_paths - Specifies the list of files and folders to exclude from
+        the target image. Files on the blacklist will not be copied from the
+        image to the target and they will not be removed from the target.
+
+        original_system_only - Verifies that the target system has the same MAC
+        address as the system from which the image was originally created.
+        Selecting True will allow you to restore an image from the exact same
+        target from which the image was created only. This option is False by
+        default. When the option is False, this operation can also apply the
+        system image to other targets of the same device class.
+
+        network_settings - Resets the primary network adapter and disables
+        secondary adapters by default.
+        """
+        source = pathlib.Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"The source {source} does not exist.")
+        if exclude_paths is not None:
+            raise NotImplementedError("Excluding paths is not implemented yet.")
+
+        with ExitStack() as stack:
+            if source.is_dir():
+                source_folder = str(source)
+            else:
+                source_folder = str(stack.enter_context(tempfile.TemporaryDirectory()))
+                try:
+                    zip_ref = stack.enter_context(zipfile.ZipFile(source, "r"))
+                except zipfile.BadZipFile:
+                    raise nisyscfg.errors.InvalidSystemImageError(
+                        f"{source} is not a valid zip file."
+                    )
+                zip_ref.extractall(source_folder)
+
+            error_code = self._library.SetSystemImageFromFolder2(
+                self._session,
+                nisyscfg.enums.Bool(auto_restart),
+                c_string_encode(source_folder),
+                c_string_encode(encryption_passphrase),
+                len(exclude_paths) if exclude_paths else 0,
+                exclude_paths,
+                nisyscfg.enums.Bool(original_system_only),
+                network_settings,
+            )
+            nisyscfg.errors.handle_error(self, error_code)
