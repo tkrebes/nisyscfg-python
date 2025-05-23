@@ -1,23 +1,33 @@
-from nisyscfg.enums import BaseEnum
+"""XNET-specific enums for hardware resource and property configuration."""
+
+from nisyscfg.enums import _BaseEnum
 
 
-class EnetPortMode(BaseEnum):
+class EnetPortMode(_BaseEnum):
+    """Automotive Ethernet port mode enumeration."""
+
     DIRECT = 0
     TAP = 1
 
 
-class EnetPhyState(BaseEnum):
+class EnetPhyState(_BaseEnum):
+    """Automotive Ethernet PHY state enumeration."""
+
     SLAVE = 0
     MASTER = 1
     AUTO = 2
 
 
-class Blink(BaseEnum):
+class Blink(_BaseEnum):
+    """Blink LED state enumeration for XNET ports."""
+
     DISABLE = 0
     ENABLE = 1
 
 
-class Protocol(BaseEnum):
+class Protocol(_BaseEnum):
+    """Protocol type enumeration for XNET ports."""
+
     CAN = 0
     FLEXRAY = 1
     LIN = 2
@@ -25,7 +35,9 @@ class Protocol(BaseEnum):
     UNKNOWN = 0xFFFFFFFE
 
 
-class CanTransceiverCapability(BaseEnum):
+class CanTransceiverCapability(_BaseEnum):
+    """CAN transceiver capability enumeration."""
+
     HS = 0
     LS = 1
     XS = 3
@@ -33,7 +45,9 @@ class CanTransceiverCapability(BaseEnum):
     UNKNOWN = 0xFFFFFFFF
 
 
-class DongleId(BaseEnum):
+class DongleId(_BaseEnum):
+    """Dongle ID enumeration for XNET ports."""
+
     LS_CAN = 1
     HS_CAN = 2
     SW_CAN = 3
@@ -43,7 +57,9 @@ class DongleId(BaseEnum):
     UNKNOWN = 14
 
 
-class DongleState(BaseEnum):
+class DongleState(_BaseEnum):
+    """Dongle state enumeration for XNET ports."""
+
     NO_DONGLE_NO_EXTERNAL_POWER = 1
     NO_DONGLE_HAS_EXTERNAL_POWER = 2
     HAS_DONGLE_NO_EXTERNAL_POWER = 3
@@ -53,29 +69,39 @@ class DongleState(BaseEnum):
     OVERCURRENT = 14
 
 
-class EnetLinkSpeed(BaseEnum):
+class EnetLinkSpeed(_BaseEnum):
+    """Automotive Ethernet link speed enumeration."""
+
     LINK_DOWN = 0
     HUNDRED_MEGABIT = 1
     GIGABIT = 2
 
 
-class EnetJumboFrames(BaseEnum):
+class EnetJumboFrames(_BaseEnum):
+    """Automotive Ethernet jumbo frames setting enumeration."""
+
     DISABLE = 0
     ENABLE_9018_BYTES = 1
 
 
-class EnetInterruptModeration(BaseEnum):
+class EnetInterruptModeration(_BaseEnum):
+    """Automotive Ethernet interrupt moderation enumeration."""
+
     OFF = 0
     LOW = 1
     MEDIUM = 2
     HIGH = 3
 
 
-class EnetSleepCapability(BaseEnum):
+class EnetSleepCapability(_BaseEnum):
+    """Automotive Ethernet sleep capability enumeration."""
+
     DISABLED_OR_NOT_AVAILABLE = 0
     ENABLED = 1
 
 
-class EnetPhyPowerMode(BaseEnum):
+class EnetPhyPowerMode(_BaseEnum):
+    """Automotive Ethernet PHY power mode enumeration."""
+
     NORMAL = 0
     SLEEP = 1

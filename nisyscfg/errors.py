@@ -1,25 +1,62 @@
-# This file is code generated
+"""This module defines error handling and status codes for the NI System Configuration library.
+
+It provides custom exceptions, warnings, and error handling utilities for interpreting and raising
+errors and warnings based on status codes returned by the library.
+"""
 
 import platform
 import warnings
+from typing import Optional, Union
 
-from nisyscfg.enums import BaseEnum
+import nisyscfg
+from nisyscfg.enums import _BaseEnum
 
 
-def _is_success(code):
+def _is_success(code: int) -> bool:
+    """Check if the status code indicates success.
+
+    Args:
+        code (int): Status code to check.
+
+    Returns:
+        bool: True if the code indicates success, False otherwise.
+    """
     return code == 0
 
 
-def _is_error(code):
+def _is_error(code: int) -> bool:
+    """Check if the status code indicates an error.
+
+    Args:
+        code (int): Status code to check.
+
+    Returns:
+        bool: True if the code indicates an error, False otherwise.
+    """
     return code < 0
 
 
-def _is_warning(code):
+def _is_warning(code: int) -> bool:
+    """Check if the status code indicates a warning.
+
+    Args:
+        code (int): Status code to check.
+
+    Returns:
+        bool: True if the code indicates a warning, False otherwise.
+    """
     return code > 0
 
 
 class Error(Exception):
-    def __init__(self, message):
+    """Base exception for NI System Configuration errors."""
+
+    def __init__(self, message: str) -> None:
+        """Initialize the Error exception.
+
+        Args:
+            message (str): Error message.
+        """
         super(Error, self).__init__(message)
 
 
@@ -28,7 +65,15 @@ class InvalidSystemImageError(Error):
 
 
 class LibraryError(Error):
-    def __init__(self, code, description):
+    """Exception raised for fatal errors returned by the NI System Configuration library."""
+
+    def __init__(self, code: Union[int, "Status"], description: str) -> None:
+        """Initialize the LibraryError exception.
+
+        Args:
+            code (Union[int, Status]): Error code.
+            description (str): Error description.
+        """
         assert _is_error(code), "Should not raise Error if code is not fatal."
         self.code = code
         self.description = description
@@ -40,7 +85,15 @@ class LibraryError(Error):
 
 
 class LibraryWarning(Warning):
-    def __init__(self, code, description):
+    """Warning raised for non-fatal warnings returned by the NI System Configuration library."""
+
+    def __init__(self, code: Union[int, "Status"], description: str) -> None:
+        """Initialize the LibraryWarning warning.
+
+        Args:
+            code (int): Warning code.
+            description (str): Warning description.
+        """
         assert _is_warning(code), "Should not create Warning if code is not positive."
         self.code = code
         self.description = description
@@ -52,14 +105,20 @@ class LibraryWarning(Warning):
 
 
 class UnsupportedPlatformError(Error):
-    def __init__(self):
+    """Exception raised when the platform is unsupported by the NI System Configuration library."""
+
+    def __init__(self) -> None:
+        """Initialize the UnsupportedPlatformError exception."""
         super(UnsupportedPlatformError, self).__init__(
             "Platform is unsupported: " + platform.architecture()[0] + " " + platform.system()
         )
 
 
 class LibraryNotInstalledError(Error):
-    def __init__(self):
+    """Exception raised when the NI System Configuration runtime is not installed."""
+
+    def __init__(self) -> None:
+        """Initialize the LibraryNotInstalledError exception."""
         super(LibraryNotInstalledError, self).__init__(
             "The NI System Configuration runtime could not be loaded. Make sure"
             " it is installed and its bitness matches that of your Python"
@@ -68,14 +127,32 @@ class LibraryNotInstalledError(Error):
         )
 
 
-def handle_error(session, code, ignore_warnings=False, is_error_handling=False):
+def handle_error(
+    session: Optional["nisyscfg.Session"],
+    code: Union[int, "Status"],
+    ignore_warnings: bool = False,
+    is_error_handling: bool = False,
+) -> None:
+    """Handle errors and warnings based on the status code returned by the library.
+
+    Args:
+        session (nisyscfg.Session): The session object used to retrieve status descriptions.
+        code (Union[int, Status]): Status code returned by the library.
+        ignore_warnings (bool, optional): If True, warnings are ignored. Defaults to False.
+        is_error_handling (bool, optional): If True, disables recursive error handling. Defaults to
+            False.
+
+    Raises:
+        LibraryError: If the code indicates a fatal error.
+        LibraryWarning: If the code indicates a warning (as a warning, not an exception).
+    """
     if _is_success(code) or (_is_warning(code) and ignore_warnings):
         return
 
     try:
-        status = Status(code)
+        status: Union[int, Status] = Status(code)
         # Only lookup descriptions for nisyscfg status codes
-        if is_error_handling:
+        if is_error_handling or (session is None):
             # The caller is in the midst of error handling and an error occurred.
             # Don't try to get the description or we'll start recursing until the stack overflows.
             description = ""
@@ -95,7 +172,9 @@ def handle_error(session, code, ignore_warnings=False, is_error_handling=False):
 warnings.filterwarnings("always", category=LibraryWarning)
 
 
-class Status(BaseEnum):
+class Status(_BaseEnum):
+    """Enumeration of NI System Configuration status codes."""
+
     OK = 0
     END_OF_ENUM = 1
     SELF_TEST_BASIC_ONLY = 263024

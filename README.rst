@@ -1,5 +1,5 @@
 +------------+-----------------------------------------------------------+
-| **Info**   | NI System Configuration Python API                        |
+| **Info**   | NI System Configuration API for Python                    | 
 +------------+-----------------------------------------------------------+
 | **Author** | National Instruments                                      |
 +------------+-----------------------------------------------------------+
@@ -19,7 +19,7 @@ object-oriented wrapper around the NI System Configuration C API using the
 
 **nisyscfg** supports only the Windows and Linux operating systems.
 
-**nisyscfg** supports CPython 3.9+.
+**nisyscfg** supports CPython 3.9+ and PyPy3.
 
 Installation
 ============
@@ -57,3 +57,6 @@ The following is a basic example of using an **nisyscfg.Session** object.
   >>>     filter.is_device = True
   >>>     for resource in session.find_hardware(filter):
   >>>         print(resource.expert_user_alias[0])
+
+See the [readthedocs page](http://nisyscfg-python.readthedocs.io/en/latest/) for more detailed
+examples and documentation.

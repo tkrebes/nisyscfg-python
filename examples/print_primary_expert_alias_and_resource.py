@@ -1,7 +1,14 @@
+"""Prints the primary expert alias and resource for each hardware resource using nisyscfg."""
+
 import nisyscfg
 
 
-def print_primary_expert_alias_and_resource():
+def print_primary_expert_alias_and_resource() -> None:
+    """Print the primary expert, alias, and resource for each hardware resource.
+
+    Uses nisyscfg to enumerate hardware resources and prints the first expert name,
+    user alias, and resource name for each resource found.
+    """
     format_string = "{0: <16} {1: <32} {2}"
     with nisyscfg.Session() as session:
         print(format_string.format("Expert", "Alias", "Resource"))

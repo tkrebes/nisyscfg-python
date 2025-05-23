@@ -1,2 +1,91 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "nisyscfg"
+version = "25.0dev0"
+license = "MIT"
+description = "NI System Configuration Python API"
+authors = ["NI <opensource@ni.com>"]
+maintainers = ["Tyler Krehbiel <tyler.krehbiel@emerson.com>"]
+readme = "README.rst"
+repository = "https://github.com/tkrebes/nisyscfg-python"
+documentation = "https://nisyscfg-python.readthedocs.io"
+keywords = ["nisyscfg", "syscfg"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+]
+
 [tool.black]
 line-length = 100
+
+[tool.poetry.dependencies]
+python = "^3.9"
+hightime = ">=0.2.1"
+six = ">=1.16.0"
+
+[tool.poetry.group.dev.dependencies]
+# Lint
+ni-python-styleguide = ">=0.4.5"
+pytest = ">=6.2.4"
+pytest-cov = ">=2.12.1"
+pygments = ">=2.10.0"
+mypy = "*"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+# The latest Sphinx requires a recent Python version.
+
+Sphinx = { version = ">=8.2", python = "^3.11" }
+sphinx-rtd-theme = ">=1.0.0"
+toml = ">=0.10.2"
+tomlkit = ">=0.11.0"
+
+[tool.pytest.ini_options]
+addopts = "--cov nisyscfg --strict-markers --doctest-modules"
+testpaths = [
+    "tests",
+]
+
+[tool.mypy]
+files = "."
+exclude = [
+    "^docs/",
+    "^nisyscfg/_library.py",
+    "^nisyscfg/nisyscfg.py",
+]
+disallow_untyped_defs = true
+namespace_packages = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+  "hightime.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+]
+disallow_untyped_defs = false

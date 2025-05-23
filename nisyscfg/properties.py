@@ -1,4 +1,14 @@
+"""Properties."""
+
+import collections.abc
 import ctypes
+from typing import Any, Callable, Iterator, Optional, Protocol, Type, TypeVar
+
+import hightime
+
+import nisyscfg.errors
+import nisyscfg.timestamp
+import nisyscfg.types
 from nisyscfg.enums import (
     AccessType,
     AdapterMode,
@@ -21,159 +31,228 @@ from nisyscfg.enums import (
     ServiceType,
     SwitchState,
 )
-import nisyscfg.timestamp
 
-from typing import List, Union
+
+def _raise_not_supported(*args: Any, **kwargs: Any) -> None:
+    """Raise a NotImplementedError."""
+    raise NotImplementedError("This method is not supported in this context.")
 
 
 class PropertyAccessor(object):
+    """Provides access to get and set properties on NI System Configuration objects."""
+
     __slots__ = "_getter", "_setter", "_indexed_getter"
 
-    def __init__(self, setter=None, getter=None, indexed_getter=None):
-        self._setter = setter
-        self._getter = getter
-        self._indexed_getter = indexed_getter
+    def __init__(
+        self,
+        setter: Optional[Callable] = None,
+        getter: Optional[Callable] = None,
+        indexed_getter: Optional[Callable] = None,
+    ):
+        """Initializes the PropertyAccessor."""
+        self._setter = setter or _raise_not_supported
+        self._getter = getter or _raise_not_supported
+        self._indexed_getter = indexed_getter or _raise_not_supported
 
-    def set_bool_property(self, id, value):
+    def set_bool_property(self, id: int, value: bool) -> None:
+        """Set a boolean property value."""
         self._setter(id, value, Bool, PropertyType.BOOL)
 
-    def set_int_property(self, id, value):
+    def set_int_property(self, id: int, value: int) -> None:
+        """Set an integer property value."""
         self._setter(id, value, ctypes.c_int, PropertyType.INT)
 
-    def set_unsigned_int_property(self, id, value):
+    def set_unsigned_int_property(self, id: int, value: int) -> None:
+        """Set an unsigned integer property value."""
         self._setter(id, value, ctypes.c_uint, PropertyType.UNSIGNED_INT)
 
-    def set_double_property(self, id, value):
+    def set_double_property(self, id: int, value: float) -> None:
+        """Set a double property value."""
         self._setter(id, value, ctypes.c_double, PropertyType.DOUBLE)
 
-    def set_string_property(self, id, value):
+    def set_string_property(self, id: int, value: str) -> None:
+        """Set a string property value."""
         self._setter(id, value, ctypes.c_char_p, PropertyType.STRING)
 
-    def set_timestamp_property(self, id, value):
+    def set_timestamp_property(self, id: int, value: hightime.datetime) -> None:
+        """Set a timestamp property value."""
         self._setter(id, value, nisyscfg.types.TimestampUTC, PropertyType.TIMESTAMP)
 
-    def get_bool_property(self, id):
-        return self._getter(id, Bool)
+    def get_bool_property(self, id: int) -> bool:
+        """Get a boolean property value."""
+        return self._getter(id, Bool)  # type: ignore[return-value]
 
-    def get_int_property(self, id):
-        return self._getter(id, ctypes.c_int)
+    def get_int_property(self, id: int) -> int:
+        """Get an integer property value."""
+        return self._getter(id, ctypes.c_int)  # type: ignore[return-value]
 
-    def get_unsigned_int_property(self, id):
-        return self._getter(id, ctypes.c_uint)
+    def get_unsigned_int_property(self, id: int) -> int:
+        """Get an unsigned integer property value."""
+        return self._getter(id, ctypes.c_uint)  # type: ignore[return-value]
 
-    def get_double_property(self, id):
-        return self._getter(id, ctypes.c_double)
+    def get_double_property(self, id: int) -> float:
+        """Get a double property value."""
+        return self._getter(id, ctypes.c_double)  # type: ignore[return-value]
 
-    def get_string_property(self, id):
-        return self._getter(id, ctypes.c_char_p)
+    def get_string_property(self, id: int) -> str:
+        """Get a string property value."""
+        return self._getter(id, ctypes.c_char_p)  # type: ignore[return-value]
 
-    def get_timestamp_property(self, id):
+    def get_timestamp_property(self, id: int) -> hightime.datetime:
+        """Get a timestamp property value."""
         return self._getter(id, nisyscfg.types.TimestampUTC)
 
-    def get_indexed_bool_property(self, id, index):
-        return self._indexed_getter(id, index, Bool)
+    def get_indexed_bool_property(self, id: int, index: int) -> bool:
+        """Get a boolean value from an indexed property."""
+        return self._indexed_getter(id, index, Bool)  # type: ignore[return-value]
 
-    def get_indexed_int_property(self, id, index):
-        return self._indexed_getter(id, index, ctypes.c_int)
+    def get_indexed_int_property(self, id: int, index: int) -> int:
+        """Get an integer value from an indexed property."""
+        return self._indexed_getter(id, index, ctypes.c_int)  # type: ignore[return-value]
 
-    def get_indexed_unsigned_int_property(self, id, index):
-        return self._indexed_getter(id, index, ctypes.c_uint)
+    def get_indexed_unsigned_int_property(self, id: int, index: int) -> int:
+        """Get an unsigned integer value from an indexed property."""
+        return self._indexed_getter(id, index, ctypes.c_uint)  # type: ignore[return-value]
 
-    def get_indexed_double_property(self, id, index):
-        return self._indexed_getter(id, index, ctypes.c_double)
+    def get_indexed_double_property(self, id: int, index: int) -> float:
+        """Get a double value from an indexed property."""
+        return self._indexed_getter(id, index, ctypes.c_double)  # type: ignore[return-value]
 
-    def get_indexed_string_property(self, id, index):
-        return self._indexed_getter(id, index, ctypes.c_char_p)
+    def get_indexed_string_property(self, id: int, index: int) -> str:
+        """Get a string value from an indexed property."""
+        return self._indexed_getter(id, index, ctypes.c_char_p)  # type: ignore[return-value]
 
-    def get_indexed_timestamp_property(self, id, index):
+    def get_indexed_timestamp_property(self, id: int, index: int) -> hightime.datetime:
+        """Get a timestamp value from an indexed property."""
         return self._indexed_getter(id, index, nisyscfg.types.TimestampUTC)
 
 
 class TypeProperty(object):
+    """Base class for type properties used in NI System Configuration."""
+
     __slots__ = "_id", "_enum", "_readable", "_writeable"
 
-    def __init__(self, id, enum=None, *, readable: bool = True, writeable: bool = True):
+    def __init__(
+        self, id: int, enum: Optional[type] = None, *, readable: bool = True, writeable: bool = True
+    ):
+        """Initializes a TypeProperty."""
         self._id = id
         self._enum = enum
         self._readable = readable
         self._writeable = writeable
 
+    def get(self, accessor: PropertyAccessor) -> Any:
+        """Get the property value."""
+        raise NotImplementedError
+
+    def set(self, accessor: PropertyAccessor, value: Any) -> None:
+        """Set the property value."""
+        raise NotImplementedError
+
 
 class BoolProperty(TypeProperty):
+    """Boolean property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get(self, accessor: PropertyAccessor):
+    def get(self, accessor: PropertyAccessor) -> bool:
+        """Get the boolean property value."""
         value = accessor.get_bool_property(self._id)
         if self._enum:
             return self._enum(value)
         return value
 
-    def set(self, accessor: PropertyAccessor, value):
+    def set(self, accessor: PropertyAccessor, value: bool) -> None:
+        """Set the boolean property value."""
         accessor.set_bool_property(self._id, value)
 
 
 class IntProperty(TypeProperty):
+    """Integer property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get(self, accessor: PropertyAccessor):
+    def get(self, accessor: PropertyAccessor) -> int:
+        """Get the integer property value."""
         value = accessor.get_int_property(self._id)
         if self._enum:
             return self._enum(value)
         return value
 
-    def set(self, accessor: PropertyAccessor, value):
+    def set(self, accessor: PropertyAccessor, value: int) -> None:
+        """Set the integer property value."""
         accessor.set_int_property(self._id, value)
 
 
 class UnsignedIntProperty(TypeProperty):
+    """Unsigned integer property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get(self, accessor: PropertyAccessor):
+    def get(self, accessor: PropertyAccessor) -> int:
+        """Get the unsigned integer property value."""
         value = accessor.get_unsigned_int_property(self._id)
         if self._enum:
             return self._enum(value)
         return value
 
-    def set(self, accessor: PropertyAccessor, value):
+    def set(self, accessor: PropertyAccessor, value: int) -> None:
+        """Set the unsigned integer property value."""
         accessor.set_unsigned_int_property(self._id, value)
 
 
 class DoubleProperty(TypeProperty):
+    """Double property type for NI System Configuration."""
+
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor) -> float:
+        """Get the double property value."""
         return accessor.get_double_property(self._id)
 
-    def set(self, accessor: PropertyAccessor, value: float):
+    def set(self, accessor: PropertyAccessor, value: float) -> None:
+        """Set the double property value."""
         accessor.set_double_property(self._id, value)
 
 
 class StringProperty(TypeProperty):
+    """String property type for NI System Configuration."""
+
     __slots__ = ()
 
     def get(self, accessor: PropertyAccessor) -> str:
+        """Get the string property value."""
         return accessor.get_string_property(self._id)
 
-    def set(self, accessor: PropertyAccessor, value: str):
+    def set(self, accessor: PropertyAccessor, value: str) -> None:
+        """Set the string property value."""
         accessor.set_string_property(self._id, value)
 
 
 class TimestampProperty(TypeProperty):
+    """Timestamp property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get(self, accessor: PropertyAccessor):
+    def get(self, accessor: PropertyAccessor) -> hightime.datetime:
+        """Get the timestamp property value."""
         return accessor.get_timestamp_property(self._id)
 
-    def set(self, accessor: PropertyAccessor, value):
+    def set(self, accessor: PropertyAccessor, value: hightime.datetime) -> None:
+        """Set the timestamp property value."""
         accessor.set_timestamp_property(self._id, value)
 
 
 class IndexedPropertyItems(object):
-    def __init__(self, accessor: PropertyAccessor, tag):
+    """Represents a collection of indexed property items for NI System Configuration."""
+
+    def __init__(self, accessor: PropertyAccessor, tag: "IndexedProperty") -> None:
+        """Initializes the IndexedPropertyItems."""
         self._accessor = accessor
         self._tag = tag
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Any:
+        """Get the item at the specified index."""
         try:
             index + 1
         except TypeError:
@@ -188,11 +267,11 @@ class IndexedPropertyItems(object):
                 raise IndexError(index)
             raise
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Get the number of items in the indexed property."""
         if not hasattr(self, "_len"):
             try:
                 self._len = self._tag.count_property.get(self._accessor)
-
             # Not all NI System API experts implement the count property. So
             # if it does not exist, explicitly count each index.
             except nisyscfg.errors.LibraryError as err:
@@ -200,33 +279,44 @@ class IndexedPropertyItems(object):
                     self._len = sum(1 for _ in self)
         return self._len
 
-    def __iter__(self):
-        class IndexedPropertyItemsIter(object):
+    def __iter__(self) -> Iterator["IndexedPropertyItems"]:
+        """Return an iterator over the indexed property items."""
+
+        class IndexedPropertyItemsIter(collections.abc.Iterator):
             __slots__ = "_properties", "_index"
 
-            def __init__(self, properties):
+            def __init__(self, properties: IndexedPropertyItems) -> None:
                 self._properties = properties
                 self._index = -1
 
-            def __next__(self):
+            def __next__(self) -> IndexedPropertyItems:
                 self._index += 1
                 try:
                     return self._properties[self._index]
                 except IndexError:
                     raise StopIteration()
 
-            def next(self):
+            def next(self) -> IndexedPropertyItems:
                 return self.__next__()
 
         return IndexedPropertyItemsIter(self)
 
 
 class IndexedProperty(TypeProperty):
+    """Base class for indexed properties in NI System Configuration."""
+
     __slots__ = ("_count_property",)
 
     def __init__(
-        self, id, count_property, enum=None, *, readable: bool = True, writeable: bool = True
+        self,
+        id: int,
+        count_property: TypeProperty,
+        enum: Optional[type] = None,
+        *,
+        readable: bool = True,
+        writeable: bool = True,
     ):
+        """Initializes an IndexedProperty."""
         self._id = id
         self._count_property = count_property
         self._enum = enum
@@ -234,17 +324,26 @@ class IndexedProperty(TypeProperty):
         self._writeable = writeable
 
     @property
-    def count_property(self):
+    def count_property(self) -> TypeProperty:
+        """The property that counts the number of indexed items."""
         return self._count_property
 
-    def get(self, accessor: PropertyAccessor):
+    def get(self, accessor: PropertyAccessor) -> IndexedPropertyItems:
+        """Get the collection of indexed property items."""
         return IndexedPropertyItems(accessor, self)
+
+    def get_index(self, accessor: PropertyAccessor, index: int) -> Any:
+        """Get the value at the specified index."""
+        raise NotImplementedError
 
 
 class IndexedBoolProperty(IndexedProperty):
+    """Indexed boolean property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get_index(self, accessor: PropertyAccessor, index: int):
+    def get_index(self, accessor: PropertyAccessor, index: int) -> bool:
+        """Get the boolean value at the specified index."""
         value = accessor.get_indexed_bool_property(self._id, index)
         if self._enum:
             return self._enum(value)
@@ -252,9 +351,12 @@ class IndexedBoolProperty(IndexedProperty):
 
 
 class IndexedIntProperty(IndexedProperty):
+    """Indexed integer property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get_index(self, accessor: PropertyAccessor, index: int):
+    def get_index(self, accessor: PropertyAccessor, index: int) -> int:
+        """Get the integer value at the specified index."""
         value = accessor.get_indexed_int_property(self._id, index)
         if self._enum:
             return self._enum(value)
@@ -262,9 +364,12 @@ class IndexedIntProperty(IndexedProperty):
 
 
 class IndexedUnsignedIntProperty(IndexedProperty):
+    """Indexed unsigned integer property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get_index(self, accessor: PropertyAccessor, index: int):
+    def get_index(self, accessor: PropertyAccessor, index: int) -> int:
+        """Get the unsigned integer value at the specified index."""
         value = accessor.get_indexed_unsigned_int_property(self._id, index)
         if self._enum:
             return self._enum(value)
@@ -272,31 +377,44 @@ class IndexedUnsignedIntProperty(IndexedProperty):
 
 
 class IndexedDoubleProperty(IndexedProperty):
+    """Indexed double property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get_index(self, accessor: PropertyAccessor, index: int):
+    def get_index(self, accessor: PropertyAccessor, index: int) -> float:
+        """Get the double value at the specified index."""
         return accessor.get_indexed_double_property(self._id, index)
 
 
 class IndexedStringProperty(IndexedProperty):
+    """Indexed string property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get_index(self, accessor: PropertyAccessor, index: int):
+    def get_index(self, accessor: PropertyAccessor, index: int) -> str:
+        """Get the string value at the specified index."""
         return accessor.get_indexed_string_property(self._id, index)
 
 
 class IndexedTimestampProperty(IndexedProperty):
+    """Indexed timestamp property type for NI System Configuration."""
+
     __slots__ = ()
 
-    def get_index(self, accessor: PropertyAccessor, index: int):
+    def get_index(self, accessor: PropertyAccessor, index: int) -> hightime.datetime:
+        """Get the timestamp value at the specified index."""
         return accessor.get_indexed_timestamp_property(self._id, index)
 
 
 class PropertyGroup(object):
+    """Base class for property groups in NI System Configuration."""
+
     pass
 
 
 class Resource(PropertyGroup):
+    """Property group for NI System Configuration resources."""
+
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     CONNECTS_TO_BUS_TYPE = IntProperty(16785408, enum=BusType)
@@ -402,6 +520,8 @@ class Resource(PropertyGroup):
 
 
 class IndexedResource(PropertyGroup):
+    """Property group for indexed NI System Configuration resources."""
+
     SERVICE_TYPE = IndexedIntProperty(17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType)
     AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(
         17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS
@@ -462,6 +582,8 @@ class IndexedResource(PropertyGroup):
 
 
 class System(PropertyGroup):
+    """Property group for NI System Configuration system properties."""
+
     DEVICE_CLASS = StringProperty(16941057)
     PRODUCT_ID = IntProperty(16941058)
     FILE_SYSTEM = IntProperty(16941060, enum=FileSystemMode)
@@ -508,6 +630,8 @@ class System(PropertyGroup):
 
 
 class Filter(PropertyGroup):
+    """Property group for NI System Configuration filter properties."""
+
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
     SERVICE_TYPE = IntProperty(17014784, enum=ServiceType)
@@ -530,46 +654,80 @@ class Filter(PropertyGroup):
     USER_ALIAS = StringProperty(16904192)
 
 
+class _HasPropertyAccessor(Protocol):
+    """Interface for objects that have a property accessor."""
+
+    @property
+    def property_accessor(self) -> "nisyscfg.properties.PropertyAccessor":
+        """The property accessor."""
+        ...
+
+
 class Property(object):
+    """Descriptor for accessing NI System Configuration properties."""
+
     __slots__ = ("_type_property",)
 
-    def __init__(self, type_property: TypeProperty):
+    def __init__(self, type_property: TypeProperty) -> None:
+        """Initializes a Property descriptor."""
         self._type_property = type_property
 
-    def __get__(self, instance, cls):
-        return self._type_property.get(instance._property_accessor)
+    def __get__(self, instance: _HasPropertyAccessor, cls: type) -> object:
+        """Get the property value from the instance."""
+        return self._type_property.get(instance.property_accessor)
 
-    def __set__(self, instance, value):
-        return self._type_property.set(instance._property_accessor, value)
+    def __set__(self, instance: _HasPropertyAccessor, value: object) -> None:
+        """Set the property value on the instance."""
+        return self._type_property.set(instance.property_accessor, value)
 
-    def __delete__(self, instance):
+    def __delete__(self, instance: object) -> None:
+        """Delete the property value (not implemented)."""
         raise NotImplementedError
 
 
 class Expert(object):
-    def __init__(self, *property_groups: List[PropertyGroup]):
+    """Descriptor for accessing expert property groups in NI System Configuration."""
+
+    def __init__(self, *property_groups: Type[PropertyGroup]) -> None:
+        """Initializes an Expert descriptor."""
+
         class _ExpertPropertyBag(object):
-            def __init__(self, property_bag):
+            def __init__(self, property_bag: PropertyAccessor) -> None:
                 self._property_accessor = property_bag
+
+            @property
+            def property_accessor(self) -> nisyscfg.properties.PropertyAccessor:
+                """The property accessor."""
+                return self._property_accessor
 
         self._expert = PropertyBag(*property_groups)(_ExpertPropertyBag)
 
-    def __get__(self, instance, cls):
-        return self._expert(instance._property_accessor)
+    def __get__(self, instance: _HasPropertyAccessor, cls: type) -> object:
+        """Get the expert property bag from the instance."""
+        return self._expert(instance.property_accessor)
 
-    def __set__(self, instance, value):
+    def __set__(self, instance: object, value: object) -> None:
+        """Setting expert property groups is not supported."""
         raise NotImplementedError
 
-    def __delete__(self, instance):
+    def __delete__(self, instance: object) -> None:
+        """Deleting expert property groups is not supported."""
         raise NotImplementedError
+
+
+_T = TypeVar("_T")
 
 
 class PropertyBag(object):
-    def __init__(self, *property_groups: List[PropertyGroup], expert: Union[None, str] = None):
+    """Container for property groups in NI System Configuration."""
+
+    def __init__(self, *property_groups: Type[PropertyGroup], expert: Optional[str] = None) -> None:
+        """Initializes a PropertyBag with the specified property groups."""
         self._property_groups = property_groups
         self._expert = expert
 
-    def __call__(self, session):
+    def __call__(self, session: _T) -> _T:
+        """Attach property groups to the session."""
         if self._expert:
             setattr(session, self._expert, Expert(*self._property_groups))
         else:

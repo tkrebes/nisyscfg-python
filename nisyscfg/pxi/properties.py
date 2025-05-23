@@ -1,27 +1,31 @@
+"""PXI-specific Properties."""
+
 from nisyscfg.properties import (
     BoolProperty,
     IndexedDoubleProperty,
     IndexedStringProperty,
     IndexedUnsignedIntProperty,
     IntProperty,
-    UnsignedIntProperty,
     PropertyGroup,
+    UnsignedIntProperty,
 )
 from nisyscfg.pxi.enums import (
+    CalExtActions,
     Clock10Sources,
-    ExternalClockOutputSources,
-    InternalOscillators,
-    PxiHighDensityTrigPortState,
-    FanModes,
     CoolingProfiles,
     CoolingProfileSource,
-    PowerSupplyStates,
+    ExternalClockOutputSources,
+    FanModes,
     InhibitModes,
-    CalExtActions,
+    InternalOscillators,
+    PowerSupplyStates,
+    PxiHighDensityTrigPortState,
 )
 
 
 class Resource(PropertyGroup):
+    """PXI HardwareResource properties."""
+
     # Chassis attributes
     PXI_CHASSIS_NUMBER = UnsignedIntProperty(184565760)
     CHASSIS_LED_BLINK_PATTERN = UnsignedIntProperty(184655872)
@@ -66,6 +70,8 @@ class Resource(PropertyGroup):
 
 
 class IndexedResource(PropertyGroup):
+    """PXI HardwareResource properties."""
+
     # Power supply index attributes
     POWER_SUPPLY_NAME = IndexedStringProperty(186781696, Resource.POWER_SUPPLY_BAY_COUNT)
     POWER_SUPPLY_STATE = IndexedUnsignedIntProperty(

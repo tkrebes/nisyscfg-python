@@ -1,27 +1,31 @@
+"""XNET-specific Properties."""
+
 from nisyscfg.enums import Bool
 from nisyscfg.properties import (
-    StringProperty,
-    UnsignedIntProperty,
     IntProperty,
     PropertyGroup,
+    StringProperty,
+    UnsignedIntProperty,
 )
 from nisyscfg.xnet.enums import (
-    EnetPortMode,
-    EnetPhyState,
     Blink,
-    Protocol,
     CanTransceiverCapability,
     DongleId,
     DongleState,
-    EnetLinkSpeed,
-    EnetJumboFrames,
     EnetInterruptModeration,
-    EnetSleepCapability,
+    EnetJumboFrames,
+    EnetLinkSpeed,
     EnetPhyPowerMode,
+    EnetPhyState,
+    EnetPortMode,
+    EnetSleepCapability,
+    Protocol,
 )
 
 
 class Resource(PropertyGroup):
+    """XNET HardwareResource properties."""
+
     # Read-only device properties
     NUMBER_OF_PORTS = UnsignedIntProperty(167780352)
     IP_STACK_INFO_JSON = StringProperty(167882752)
@@ -57,6 +61,8 @@ class Resource(PropertyGroup):
 
 
 class Filter(PropertyGroup):
+    """XNET Filter properties."""
+
     # Write-only device properties
     NUMBER_OF_PORTS = UnsignedIntProperty(167780352)
 

@@ -1,17 +1,35 @@
+"""Script to assign a user alias (port name) to an NI-XNET port using nisyscfg."""
+
+import sys
+
 import nisyscfg
 import nisyscfg.xnet
-import sys
 
 
 class DeviceNotFoundError(Exception):
+    """Exception raised when a device with the specified serial number is not found."""
+
     pass
 
 
 class PortNotFoundError(Exception):
+    """Exception raised when a port with the specified number is not found on the device."""
+
     pass
 
 
-def nixnet_assign_port_name(serial_number, port_number, port_name):
+def nixnet_assign_port_name(serial_number: str, port_number: int, port_name: str) -> None:
+    """Assign a user alias (port name) to an NI-XNET port.
+
+    Args:
+        serial_number (str): Serial number of the NI-XNET device.
+        port_number (int): Port number on the device.
+        port_name (str): New user alias to assign to the port.
+
+    Raises:
+        DeviceNotFoundError: If no device with the specified serial number is found.
+        PortNotFoundError: If the device does not have the specified port number.
+    """
     with nisyscfg.Session() as session:
         # Search for the NI-XNET device with the specified serial number.
         device_filter = session.create_filter()

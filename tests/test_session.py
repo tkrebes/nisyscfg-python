@@ -1,18 +1,15 @@
 import ctypes
 import pathlib
+from unittest import mock
 
 import hightime
+import pytest
+
 import nisyscfg as nisyscfg
 import nisyscfg.enums
 import nisyscfg.errors
 import nisyscfg.properties
 import nisyscfg.timestamp
-import pytest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 
 def test_import():
@@ -31,52 +28,58 @@ STATUS_DESCRIPTION = ctypes.c_char_p(b"description")
 STATUS_DESCRIPTION_VOID_P = ctypes.cast(STATUS_DESCRIPTION, ctypes.c_void_p)
 
 
-class CVoidPMatcher(object):
-    def __init__(self, value):
+class CVoidPMatcher(object):  # noqa: D101 - Missing docstring in public class (auto-generated noqa)
+    def __init__(self, value):  # noqa: D107 - Missing docstring in __init__ (auto-generated noqa)
         self.value = value
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return ctypes.cast(other, ctypes.c_void_p).value == self.value
 
-    def __repr__(self):
+    def __repr__(self):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return "c_void_p({})".format(self.value)
 
 
-class CIntPMatcher(object):
-    def __init__(self, value):
+class CIntPMatcher(object):  # noqa: D101 - Missing docstring in public class (auto-generated noqa)
+    def __init__(self, value):  # noqa: D107 - Missing docstring in __init__ (auto-generated noqa)
         self.value = value
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return other.value == self.value
 
-    def __repr__(self):
+    def __repr__(self):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return "{}".format(ctypes.c_int(self.value))
 
 
-class CUIntPMatcher(object):
-    def __init__(self, value):
+class CUIntPMatcher(object):  # noqa: D101 - Missing docstring in public class (auto-generated noqa)
+    def __init__(self, value):  # noqa: D107 - Missing docstring in __init__ (auto-generated noqa)
         self.value = value
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return other.value == self.value
 
-    def __repr__(self):
+    def __repr__(self):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return "{}".format(ctypes.c_uint(self.value))
 
 
-class TimestampMatcher(object):
-    def __init__(self, value):
+class TimestampMatcher(  # noqa: D101 - Missing docstring in public class (auto-generated noqa)
+    object
+):
+    def __init__(self, value):  # noqa: D107 - Missing docstring in __init__ (auto-generated noqa)
         self.value = value
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return other[:] == self.value[:]
 
-    def __repr__(self):
+    def __repr__(self):  # noqa: D105 - Missing docstring in magic method (auto-generated noqa)
         return "{:08X}-{:08X}-{:08X}-{:08X}".format(*self.value[:])
 
 
-class ExpertInfoSideEffect(object):
-    def __init__(self, expert_name, display_name, version):
+class ExpertInfoSideEffect(  # noqa: D101 - Missing docstring in public class (auto-generated noqa)
+    object
+):
+    def __init__(  # noqa: D107 - Missing docstring in __init__ (auto-generated noqa)
+        self, expert_name, display_name, version
+    ):
         self.expert_name = expert_name
         self.display_name = display_name
         self.version = version
@@ -88,8 +91,12 @@ class ExpertInfoSideEffect(object):
         return nisyscfg.errors.Status.OK
 
 
-class NextResourceSideEffect(object):
-    def __init__(self, resource_handle):
+class NextResourceSideEffect(  # noqa: D101 - Missing docstring in public class (auto-generated noqa)
+    object
+):
+    def __init__(  # noqa: D107 - Missing docstring in __init__ (auto-generated noqa)
+        self, resource_handle
+    ):
         self.resource_handle = resource_handle
 
     def __call__(self, session_handle, resource_enum_handle, resource_handle):
@@ -208,6 +215,8 @@ def config_get_resource_property_mock(lib_mock, expected_value):
     def get_resource_property_mock(resource_handle, property_id, property_value):
         if property_value.__class__.__name__.startswith("c_char_Array"):
             property_value.value = expected_value.encode("ascii")
+        elif property_value.__class__.__name__.startswith("LP_c_char_Array"):
+            property_value.contents.value = expected_value.encode("utf-8")
         else:
             property_value.contents.value = expected_value
         return nisyscfg.errors.Status.OK
@@ -796,7 +805,11 @@ def test_get_hardware_resource_timestamp_property(
         property_value.contents[:] = timestamp[:]
         return nisyscfg.errors.Status.OK
 
-    def values_from_timestamp_side_effect(timestamp, secondsSinceEpoch1970, fractionalSeconds):
+    def values_from_timestamp_side_effect(
+        timestamp,
+        secondsSinceEpoch1970,  # noqa: N803 - argument name 'secondsSinceEpoch1970' should be lowercase (auto-generated noqa)
+        fractionalSeconds,  # noqa: N803 - argument name 'fractionalSeconds' should be lowercase (auto-generated noqa)
+    ):
         secondsSinceEpoch1970.contents.value = 0
         fractionalSeconds.contents.value = 0.0
         return nisyscfg.errors.Status.OK
@@ -1008,7 +1021,11 @@ def test_set_hardware_resource_timestamp_property(
 ):
     ctypes_timestamp = nisyscfg.types.TimestampUTC(100, 200, 300, 400)  # random values
 
-    def timestamp_from_values_side_effect(secondsSinceEpoch1970, fractionalSeconds, timestamp):
+    def timestamp_from_values_side_effect(
+        secondsSinceEpoch1970,  # noqa: N803 - argument name 'secondsSinceEpoch1970' should be lowercase (auto-generated noqa)
+        fractionalSeconds,  # noqa: N803 - argument name 'fractionalSeconds' should be lowercase (auto-generated noqa)
+        timestamp,
+    ):
         timestamp.contents[:] = ctypes_timestamp
         return nisyscfg.errors.Status.OK
 

@@ -1,13 +1,28 @@
+"""Script to blink the port LED on an NI-XNET device using nisyscfg."""
+
+import sys
+from typing import Union
+
 import nisyscfg
 import nisyscfg.xnet
-import sys
 
 
 class PortNotFoundError(Exception):
+    """Exception raised when a port with the specified name is not found."""
+
     pass
 
 
-def nixnet_blink_port_led(port_name, mode):
+def nixnet_blink_port_led(port_name: str, mode: Union[nisyscfg.xnet.enums.Blink, int]) -> None:
+    """Blink the LED on an NI-XNET port.
+
+    Args:
+        port_name (str): The user alias of the NI-XNET port.
+        mode: The blink mode (e.g., nisyscfg.xnet.enums.Blink.ENABLE or DISABLE).
+
+    Raises:
+        PortNotFoundError: If no port with the specified name is found.
+    """
     with nisyscfg.Session() as session:
         # Search for the NI-XNET interface with port name.
         interface_filter = session.create_filter()
