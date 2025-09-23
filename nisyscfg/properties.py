@@ -299,7 +299,7 @@ class PropertyGroup(object):
 class Resource(PropertyGroup):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
-    CONNECTS_TO_BUS_TYPE = IntProperty(16785408, enum=BusType)
+    CONNECTS_TO_BUS_TYPE = UnsignedIntProperty(16785408, enum=BusType)
     VENDOR_ID = UnsignedIntProperty(16789504)
     VENDOR_NAME = StringProperty(16793600)
     PRODUCT_ID = UnsignedIntProperty(16797696)
@@ -334,7 +334,7 @@ class Resource(PropertyGroup):
     GPIB_PRIMARY_ADDRESS = IntProperty(16994304)
     GPIB_SECONDARY_ADDRESS = IntProperty(16998400)
     SERIAL_PORT_BINDING = StringProperty(17076224)
-    PROVIDES_BUS_TYPE = IntProperty(16932864, enum=BusType)
+    PROVIDES_BUS_TYPE = UnsignedIntProperty(16932864, enum=BusType)
     PROVIDES_LINK_NAME = StringProperty(16936960)
     NUMBER_OF_SLOTS = IntProperty(16826368)
     SUPPORTS_FIRMWARE_UPDATE = BoolProperty(17080320)
@@ -402,7 +402,9 @@ class Resource(PropertyGroup):
 
 
 class IndexedResource(PropertyGroup):
-    SERVICE_TYPE = IndexedIntProperty(17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType)
+    SERVICE_TYPE = IndexedUnsignedIntProperty(
+        17014784, Resource.NUMBER_OF_SERVICES, enum=ServiceType
+    )
     AVAILABLE_FIRMWARE_VERSION = IndexedStringProperty(
         17092608, Resource.NUMBER_OF_AVAILABLE_FIRMWARE_VERSIONS
     )
@@ -510,10 +512,10 @@ class System(PropertyGroup):
 class Filter(PropertyGroup):
     IS_DEVICE = BoolProperty(16781312)
     IS_CHASSIS = BoolProperty(16941056)
-    SERVICE_TYPE = IntProperty(17014784, enum=ServiceType)
-    CONNECTS_TO_BUS_TYPE = IntProperty(16785408, enum=BusType)
+    SERVICE_TYPE = UnsignedIntProperty(17014784, enum=ServiceType)
+    CONNECTS_TO_BUS_TYPE = UnsignedIntProperty(16785408, enum=BusType)
     CONNECTS_TO_LINK_NAME = StringProperty(16818176)
-    PROVIDES_BUS_TYPE = IntProperty(16932864, enum=BusType)
+    PROVIDES_BUS_TYPE = UnsignedIntProperty(16932864, enum=BusType)
     VENDOR_ID = UnsignedIntProperty(16789504)
     PRODUCT_ID = UnsignedIntProperty(16797696)
     SERIAL_NUMBER = StringProperty(16805888)
